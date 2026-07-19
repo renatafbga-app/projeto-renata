@@ -11,7 +11,7 @@
  *   Para subir uma versão nova, basta alterar CACHE_VERSION abaixo.
  * ========================================================================== */
 
-const CACHE_VERSION = 'v1.3.0';
+const CACHE_VERSION = 'v1.4.0';
 const CACHE = `projeto-renata-${CACHE_VERSION}`;
 
 /** Tudo que o app precisa para abrir offline. */
@@ -21,16 +21,17 @@ const ASSETS = [
   './js/app.js', './js/router.js', './js/ui.js', './js/icons.js',
   './js/core/schema.js', './js/core/db.js', './js/core/store.js',
   './js/core/autosave.js', './js/core/stats.js', './js/core/backup.js',
-  './js/core/notifications.js', './js/core/adapters.js',
+  './js/core/notifications.js', './js/core/adapters.js', './js/core/image.js',
   './js/views/home.js', './js/views/book.js', './js/views/book-chapter.js',
   './js/views/workouts.js', './js/views/workout-day.js', './js/views/session.js',
   './js/views/library.js', './js/views/exercise.js', './js/views/progress.js',
   './js/views/more.js', './js/views/weight.js', './js/views/measures.js',
   './js/views/water.js', './js/views/nutrition.js', './js/views/sleep.js',
   './js/views/mood.js', './js/views/knee.js', './js/views/journal.js',
-  './js/views/settings.js',
+  './js/views/settings.js', './js/views/photos.js', './js/views/reminders.js',
   './data/figures.data.js', './data/exercises.data.js',
   './data/program.data.js', './data/book.data.js', './data/stretches.data.js',
+  './data/foods.data.js',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'
 ];

@@ -328,3 +328,42 @@
 }
 .reminder .t { font-size: var(--fs-subhead); font-weight: 600; color: var(--accent); }
 .reminder .s { font-size: var(--fs-footnote); color: var(--label-2); }
+
+/* ---------------- CAIXA DE DESTAQUE (callout) ----------------
+   REGRESSÃO CORRIGIDA em v1.4.0: estas regras foram removidas por engano na
+   auditoria 4.5, quando o bloco `.prose` duplicado foi retirado do views.css —
+   o recorte levou junto as regras `.callout`, que ficavam entre eles.
+   Sem `display: block` no título, o <span class="t"> virava inline e o texto
+   colava: "Seu momentoA hidratação...". Usado tanto nas telas quanto no livro. */
+.callout {
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  margin: var(--sp-4) 0;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: var(--fs-subhead);
+  line-height: 1.58;
+  color: var(--label);
+}
+.callout .t {
+  display: block;                 /* ← a linha cuja ausência causou o defeito */
+  font-weight: 700;
+  font-size: var(--fs-footnote);
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  color: var(--accent);
+}
+.callout p { margin: 0 0 var(--sp-2); }
+.callout p:last-child { margin-bottom: 0; }
+.callout a { font-weight: 600; text-decoration: underline; }
+.callout.tip  { border-color: var(--teal); background: var(--teal-soft); }
+.callout.tip .t { color: var(--teal); }
+.callout.knee { border-color: var(--red); background: rgba(255, 69, 58, .12); }
+.callout.knee .t { color: var(--red); }
+.callout.note { border-color: var(--label-3); background: var(--fill-soft); }
+.callout.note .t { color: var(--label-2); }
+
+/* Corpo do sheet — garante respiro entre o título e o conteúdo */
+.sheet-body > *:first-child { margin-top: 0; }
+.sheet-body p { margin-bottom: var(--sp-3); }

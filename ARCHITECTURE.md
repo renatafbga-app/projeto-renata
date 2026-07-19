@@ -55,12 +55,18 @@ prefixo, o backup continua capturando.
 | `sets` | auto | Log achatado de séries — alimenta a progressão de carga |
 | `daily` | `${perfil}:${tipo}:${data}` | Tudo que é "um valor por dia" |
 | `journal` | auto | Entradas livres do diário |
+| `photos` | `${perfil}:${data}` | Evolução por fotos: 4 ângulos em data URL |
 | `meta` | `key` | Versão de schema, migrações aplicadas |
 
 **Decisão:** unificamos peso, medidas, água, refeições, sono, humor e joelho num
 único store `daily`, diferenciados pelo campo `kind`. Sete stores separados
 gerariam sete vezes o mesmo código de CRUD. Adicionar um novo tipo de
 acompanhamento amanhã custa uma linha em `DAILY_KINDS`.
+
+**Decisão (v1.4):** as fotos são guardadas como **data URL** e não como Blob.
+São comprimidas no aparelho (lado maior 1280 px, JPEG 0.72 → ~150 KB) antes de
+gravar. Data URL entra no backup JSON sem conversão e sobrevive a exportar e
+importar; Blob exigiria serialização especial em cada caminho.
 
 **Decisão:** chaves compostas em string (`default:water:2026-07-19`) em vez de
 índices complexos. Leitura e escrita ficam determinísticas e o código do `db.js`
@@ -143,6 +149,28 @@ Também foi adicionado um **vigia de boot** em `index.html` — script clássico
 não módulo, porque um módulo que falha não executa. Se o app não sinalizar
 `window.__PR_BOOTED` em 8 segundos, ele esconde o splash e mostra os erros
 capturados. Num telefone não existe console de desenvolvedor.
+
+---
+
+## 5c. Incidente v1.4.0 — o rótulo colado
+
+**Sintoma:** títulos de aviso grudados no texto — "Seu momentoA hidratação…",
+"Atenção ao joelhoFortalece…".
+
+**Causa:** regressão introduzida pela própria auditoria 4.5. Ao remover o bloco
+`.prose` "duplicado" do `views.css`, o recorte ia de `.prose {` até `.figure {`
+— e levou junto as regras `.callout`, que ficavam entre os dois. Sem
+`display: block` no `<span class="t">`, o rótulo virava texto corrido.
+
+**Correção:** componente `.callout` restaurado em `components.css`, agora como
+componente compartilhado (é usado tanto nas telas quanto no livro).
+
+**O que mudou no processo:** `tools/audit-textos.mjs` renderiza todas as telas e
+capítulos, extrai o **texto visível** e procura palavras coladas. Ele lê o CSS
+para saber quais `<span>` são bloco — sem isso acusaria falso positivo onde o
+CSS já resolve, e deixaria passar o caso real. Um segundo teste garante que
+nenhuma classe usada no markup fique sem regra CSS, que foi como o defeito
+nasceu.
 
 ---
 
@@ -230,7 +258,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-78 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+101 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

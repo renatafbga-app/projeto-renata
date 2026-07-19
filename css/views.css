@@ -249,3 +249,115 @@
 
 /* Evita repaint da barra inferior durante a rolagem no iOS */
 .tabbar, .navbar { will-change: transform; }
+
+/* ============================================================================
+ * EVOLUÇÃO POR FOTOS
+ * ========================================================================== */
+.timeline { position: relative; padding-left: 22px; }
+.timeline::before {
+  content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px;
+  width: 2px; background: var(--separator); border-radius: 1px;
+}
+.tl-item { position: relative; margin-bottom: var(--sp-3); }
+.tl-marker {
+  position: absolute; left: -21px; top: 18px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--bg);
+}
+.tl-card {
+  background: var(--bg-elev-1); border-radius: var(--r-lg);
+  padding: var(--sp-4); transition: transform var(--dur-fast) var(--ease-spring);
+}
+.tl-card:active { transform: scale(.985); }
+.tl-date { font-size: var(--fs-callout); font-weight: 600; }
+.tl-meta { font-size: var(--fs-footnote); color: var(--label-2); margin-top: 3px; }
+.delta-down { color: var(--green); font-weight: 600; }
+.delta-up   { color: var(--label-2); font-weight: 600; }
+.tl-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: var(--sp-3); }
+.tl-thumb {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  border-radius: var(--r-sm); background: var(--bg-elev-2); display: block;
+}
+.tl-thumb.vazio {
+  display: grid; place-items: center;
+  color: var(--label-4); border: 1px dashed var(--label-4);
+}
+.tl-note {
+  font-size: var(--fs-footnote); color: var(--label-2);
+  margin: var(--sp-3) 0 0; line-height: 1.5;
+}
+
+/* grade de captura dentro do sheet */
+.shot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.shot { display: flex; flex-direction: column; }
+.shot-frame {
+  width: 100%; aspect-ratio: 3/4; border-radius: var(--r-md);
+  overflow: hidden; background: var(--bg-elev-2);
+}
+.shot-frame img { width: 100%; height: 100%; object-fit: cover; }
+.shot-vazio {
+  width: 100%; height: 100%; display: grid; place-items: center;
+  color: var(--label-4); border: 1px dashed var(--label-4);
+  border-radius: var(--r-md); font-size: var(--fs-footnote); text-align: center;
+}
+.shot-nome {
+  font-size: var(--fs-footnote); font-weight: 600;
+  margin: 7px 0 5px; text-align: center;
+}
+.shot-acoes { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.shot-acoes .btn { padding: 6px 10px; font-size: var(--fs-caption); }
+
+/* comparação antes × depois */
+.cmp-par { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.cmp-par figure { margin: 0; }
+.cmp-par img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover;
+  border-radius: var(--r-md); display: block;
+}
+.cmp-par figcaption {
+  font-size: var(--fs-caption); color: var(--label-2);
+  text-align: center; margin-top: 6px;
+}
+
+/* ---------------- ÁGUA: botões rápidos ---------------- */
+.quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+.quick-btn {
+  background: var(--bg-elev-1); border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-2); text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
+}
+.quick-btn:active { transform: scale(.94); background: var(--accent-soft); }
+.quick-btn .qv { font-size: var(--fs-callout); font-weight: 700; color: var(--accent); }
+.quick-btn .qu { font-size: var(--fs-caption); color: var(--label-2); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------------- DIÁRIO NUTRICIONAL ---------------- */
+.macro-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2); margin-top: var(--sp-4);
+}
+.macro { background: var(--bg-elev-2); border-radius: var(--r-sm); padding: 9px 7px; text-align: center; }
+.macro-v { font-size: var(--fs-callout); font-weight: 700; letter-spacing: -.3px; }
+.macro-v small { font-size: 10px; font-weight: 600; color: var(--label-2); margin-left: 1px; }
+.macro-l { font-size: 9.5px; color: var(--label-2); text-transform: uppercase; letter-spacing: .5px; margin: 2px 0 5px; }
+.food-list { margin-top: var(--sp-3); }
+.food-item {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 8px 0; border-bottom: .5px solid var(--separator);
+}
+.food-item:last-child { border-bottom: 0; }
+.food-nome { font-size: var(--fs-subhead); font-weight: 500; }
+.food-macros { font-size: var(--fs-caption); color: var(--label-2); margin-top: 2px; }
+
+/* ---------------- CRONÔMETRO DE DESCANSO ---------------- */
+.rest-bar { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+.rest-main { display: flex; align-items: center; gap: var(--sp-2); }
+.rest-presets { display: flex; gap: 5px; }
+.rest-preset {
+  flex: 1; padding: 7px 4px; border-radius: var(--r-sm);
+  background: var(--fill); color: var(--label-2);
+  font-size: var(--fs-caption); font-weight: 600;
+  transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+}
+.rest-preset:active { transform: scale(.93); background: var(--accent); color: #fff; }

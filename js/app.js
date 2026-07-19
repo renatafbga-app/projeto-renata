@@ -37,6 +37,8 @@ route('/sono',           V('sleep'));
 route('/humor',          V('mood'));
 route('/joelho',         V('knee'));
 route('/diario',         V('journal'));
+route('/fotos',          V('photos'));
+route('/lembretes',      V('reminders'));
 route('/config',         V('settings'));
 
 /* ------------------------------------------------- navbar reage ao scroll */

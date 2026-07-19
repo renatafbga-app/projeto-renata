@@ -8,7 +8,7 @@
  * Emite eventos de mudança para que as telas se atualizem sozinhas.
  * ========================================================================== */
 import * as db from './db.js';
-import { LS_PREFIX, DEFAULT_SETTINGS, DAILY_KINDS } from './schema.js';
+import { LS_PREFIX, DEFAULT_SETTINGS, DAILY_KINDS, PHOTO_SLOTS } from './schema.js';
 
 /* -------------------------------------------------- perfis (multi-perfil) */
 const K_PROFILES = LS_PREFIX + 'profiles';
@@ -82,7 +82,17 @@ export function getSettings() {
   return {
     ...DEFAULT_SETTINGS, ...saved,
     mealTimes: { ...DEFAULT_SETTINGS.mealTimes, ...(saved.mealTimes || {}) },
-    reminders: { ...DEFAULT_SETTINGS.reminders, ...(saved.reminders || {}) },
+    // merge por categoria: uma categoria nova numa versão futura aparece
+    // sozinha, sem apagar os horários que a usuária já configurou
+    reminders: (() => {
+      const base = DEFAULT_SETTINGS.reminders, sv = saved.reminders || {};
+      const out = { enabled: sv.enabled ?? base.enabled };
+      for (const [k, v] of Object.entries(base)) {
+        if (k === 'enabled') continue;
+        out[k] = (sv[k] && typeof sv[k] === 'object') ? { ...v, ...sv[k] } : v;
+      }
+      return out;
+    })(),
     units:     { ...DEFAULT_SETTINGS.units,     ...(saved.units || {}) }
   };
 }
@@ -271,6 +281,63 @@ export async function series(kind, pick = v => v) {
   return (await listDaily(kind))
     .map(r => ({ date: r.date, v: Number(pick(r.value)) }))
     .filter(p => Number.isFinite(p.v));
+}
+
+/* ==========================================================================
+ * EVOLUÇÃO POR FOTOS
+ * Tudo fica no aparelho. Nenhuma imagem sai daqui: sem servidor, sem nuvem,
+ * sem compartilhamento automático. Entram no backup porque o store `photos`
+ * faz parte do schema — o backup itera sobre ele como sobre qualquer outro.
+ * ========================================================================== */
+const pid = date => `${P()}:${date}`;
+
+export async function getPhotoSession(date) {
+  return (await db.get('photos', pid(date))) || null;
+}
+
+/** Cria ou atualiza o registro de uma data (peso e observação). */
+export async function savePhotoSession(date, patch = {}) {
+  const prev = (await getPhotoSession(date)) || {
+    id: pid(date), profile: P(), date, weight: null, note: '',
+    shots: {}, createdAt: now()
+  };
+  const rec = { ...prev, ...patch, updatedAt: now() };
+  await db.put('photos', rec);
+  emit('photos', rec);
+  return rec;
+}
+
+/** Grava uma foto num ângulo. `dataURL` já vem comprimido pela view. */
+export async function setPhotoShot(date, slot, dataURL) {
+  if (!PHOTO_SLOTS.some(s => s.key === slot)) throw new Error(`ângulo inválido: ${slot}`);
+  const rec = await savePhotoSession(date);
+  rec.shots = { ...rec.shots, [slot]: dataURL };
+  rec.updatedAt = now();
+  await db.put('photos', rec);
+  emit('photos', rec);
+  return rec;
+}
+
+export async function removePhotoShot(date, slot) {
+  const rec = await getPhotoSession(date);
+  if (!rec) return null;
+  const shots = { ...rec.shots };
+  delete shots[slot];
+  const next = { ...rec, shots, updatedAt: now() };
+  await db.put('photos', next);
+  emit('photos', next);
+  return next;
+}
+
+export const removePhotoSession = date =>
+  db.del('photos', pid(date)).then(() => emit('photos'));
+
+/** Sessões em ordem cronológica, com contagem de fotos já preenchida. */
+export async function listPhotoSessions() {
+  const rows = await db.byIndex('photos', 'profile', IDBKeyRange.only(P()));
+  return rows
+    .map(r => ({ ...r, total: Object.keys(r.shots || {}).length }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 /* ==========================================================================

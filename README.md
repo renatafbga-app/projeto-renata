@@ -71,7 +71,7 @@ Depois disso, funciona sem internet.
 node tools/test.mjs
 ```
 
-78 testes, sem navegador (inclui auditoria estática de HTML × CSS). Cobrem dados, regras de negócio, backup e a
+101 testes, sem navegador (inclui auditoria de HTML × CSS e de texto renderizado). Cobrem dados, regras de negócio, backup e a
 renderização das 19 telas.
 
 ---
@@ -105,9 +105,9 @@ manifest.json         Manifesto PWA
 service-worker.js     Cache offline
 css/                  Design system (5 arquivos, inclui book.css)
 js/core/              Dados, autosave, estatísticas, backup, adaptadores
-js/views/             15 telas
-data/                 Conteúdo integral: 15 capítulos, 30 exercícios,
-                      90 dias, 40 figuras, alongamentos e aquecimentos
+js/views/             17 telas
+data/                 Conteúdo integral: 15 capítulos, 30 exercícios, 90 dias,
+                      40 figuras, alongamentos, aquecimentos e 58 alimentos
 icons/                Ícones do app
 tools/                Testes
 ARCHITECTURE.md       Decisões de arquitetura (leia antes de manter o código)

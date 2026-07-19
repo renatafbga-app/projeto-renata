@@ -61,22 +61,31 @@ export default {
 
       <div class="section-header"><span class="section-title">Lembretes</span></div>
       <div class="list">
-        <div class="row">
-          <div class="row-icon">${icon('bell', 18)}</div>
-          <div class="row-body"><div class="row-title">Ativar lembretes</div>
-            <div class="row-sub">Permissão: ${perm === 'granted' ? 'concedida'
-              : perm === 'denied' ? 'negada nos ajustes do iPhone' : 'ainda não solicitada'}</div></div>
-          <div class="toggle ${s.reminders.enabled ? 'on' : ''}" data-rem="enabled"></div>
-        </div>
-        ${[['workout','Treino'],['water','Água'],['meals','Refeições'],['weight','Peso'],['sleep','Sono']]
-          .map(([k, label]) => `<div class="row">
-            <div class="row-body"><div class="row-title">${label}</div></div>
-            <div class="toggle ${s.reminders[k] ? 'on' : ''}" data-rem="${k}"></div></div>`).join('')}
+        <a class="row" href="#/lembretes">
+          <div class="row-icon ${s.reminders.enabled ? 'tint' : ''}">${icon('bell', 18)}</div>
+          <div class="row-body">
+            <div class="row-title">Central de Lembretes</div>
+            <div class="row-sub">
+              ${s.reminders.enabled
+                ? 'Água, treino, alimentação, peso, medidas e fotos'
+                : 'Desativados'}
+            </div>
+          </div>
+          <span class="row-chevron">${icon('chevron', 15)}</span>
+        </a>
       </div>
-      <div class="callout note"><span class="t">Como funciona no iPhone</span>
-        Sem um servidor de push, o iOS não entrega notificação com o app fechado.
-        Os lembretes chegam quando o app está aberto, e os pendentes do dia
-        aparecem assim que você o abre.</div>
+
+      <div class="section-header"><span class="section-title">Nutrição</span></div>
+      <div class="card">
+        <div class="field">
+          <label class="field-label" for="cfgKcal">Meta de calorias por dia</label>
+          <input class="input" type="number" id="cfgKcal" value="${s.calorieGoal}" data-save="calorieGoal">
+        </div>
+        <div class="field mb-0">
+          <label class="field-label" for="cfgProt">Meta de proteína por dia (g)</label>
+          <input class="input" type="number" id="cfgProt" value="${s.proteinGoal}" data-save="proteinGoal">
+        </div>
+      </div>
 
       <div class="section-header"><span class="section-title">Dados</span></div>
       <div class="list">
@@ -121,7 +130,7 @@ export default {
         const k = field.split('.')[1];
         store.setSettings({ mealTimes: { ...store.getSettings().mealTimes, [k]: value } });
       } else {
-        const num = ['goalWeight', 'heightCm', 'waterGoal'].includes(field);
+        const num = ['goalWeight', 'heightCm', 'waterGoal', 'calorieGoal', 'proteinGoal'].includes(field);
         store.setSettings({ [field]: num ? parseFloat(String(value).replace(',', '.')) || 0 : value });
       }
     }, ctx);
@@ -133,16 +142,6 @@ export default {
       toast(on ? 'Modo livre ativado' : 'Desbloqueio em sequência');
     }));
 
-    /* toggles de lembrete */
-    qsa('[data-rem]', root).forEach(t => t.addEventListener('click', async () => {
-      const on = t.classList.toggle('on'); haptic();
-      const k = t.dataset.rem;
-      store.setSettings({ reminders: { ...store.getSettings().reminders, [k]: on } });
-      if (on && k === 'enabled') {
-        const p = await notif.requestPermission();
-        if (p !== 'granted') toast('Sem permissão: usarei avisos dentro do app');
-      }
-    }));
 
     /* backup */
     qs('#btnExport', root).addEventListener('click', async () => {

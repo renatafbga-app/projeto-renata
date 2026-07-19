@@ -3,7 +3,8 @@ import { icon } from '../icons.js';
 const GROUPS = [
   { title: 'Acompanhamento', items: [
     { p: '/peso',        i: 'scale',  t: 'Peso',           s: 'Registro e gráfico' },
-    { p: '/medidas',     i: 'ruler',  t: 'Medidas',        s: '7 medidas corporais' },
+    { p: '/fotos',       i: 'grid',   t: 'Evolução por Fotos', s: 'Linha do tempo e comparação' },
+    { p: '/medidas',     i: 'ruler',  t: 'Medidas',        s: '9 medidas corporais' },
     { p: '/agua',        i: 'drop',   t: 'Água',           s: 'Meta diária' },
     { p: '/alimentacao', i: 'meal',   t: 'Alimentação',    s: '6 refeições do dia' }
   ]},

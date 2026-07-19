@@ -40,6 +40,21 @@ export default {
       </div>
       <div class="bar" style="margin-bottom:16px"><div class="bar-fill" id="sessBar" style="width:0%"></div></div>
 
+      <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+        <div class="stat" style="padding:11px">
+          <div class="stat-value" style="font-size:15px">${esc(d.time)}</div>
+          <div class="stat-label">Tempo estimado</div>
+        </div>
+        <div class="stat" style="padding:11px">
+          <div class="stat-value" style="font-size:15px">~${d.kcal}<span class="stat-unit">kcal</span></div>
+          <div class="stat-label">Calorias</div>
+        </div>
+        <div class="stat" style="padding:11px">
+          <div class="stat-value" style="font-size:15px">${planned.length}</div>
+          <div class="stat-label">Exercícios</div>
+        </div>
+      </div>
+
       <div class="card tight" style="margin-bottom:14px">
         <div class="card-title" style="font-size:15px">${icon('bolt', 18)} Aquecimento</div>
         <div class="card-sub">${esc(d.warmup)}</div>
@@ -154,15 +169,44 @@ export default {
       let left = sec;
       const bar = document.createElement('div');
       bar.className = 'rest-bar';
-      bar.innerHTML = `<div><div class="rest-label">Descanso</div>
-        <div class="rest-time" id="restTime">${fmtTime(left)}</div></div>
-        <div class="grow"></div><button class="btn sm" id="restSkip">Pular</button>`;
+      bar.innerHTML = `
+        <div class="rest-main">
+          <div>
+            <div class="rest-label">Descanso</div>
+            <div class="rest-time" id="restTime">${fmtTime(left)}</div>
+          </div>
+          <div class="grow"></div>
+          <button class="btn sm" id="restMais">+30 s</button>
+          <button class="btn sm" id="restSkip">Pular</button>
+        </div>
+        <div class="rest-presets">
+          ${[30, 60, 90].map(v => `<button class="rest-preset" data-preset="${v}">${v} s</button>`).join('')}
+          <button class="rest-preset" data-preset="custom">Outro</button>
+        </div>`;
       document.body.appendChild(bar);
-      qs('#restSkip', bar).addEventListener('click', stopRest);
-      restTimer = setInterval(() => {
-        left--;
+
+      const mostrar = () => {
         const t = qs('#restTime');
         if (t) t.textContent = fmtTime(Math.max(left, 0));
+      };
+
+      qs('#restSkip', bar).addEventListener('click', stopRest);
+      qs('#restMais', bar).addEventListener('click', () => { left += 30; mostrar(); haptic(); });
+
+      qsa('[data-preset]', bar).forEach(b => b.addEventListener('click', () => {
+        if (b.dataset.preset === 'custom') {
+          const entrada = prompt('Descanso em segundos:', String(left > 0 ? left : 60));
+          const v = parseInt(entrada, 10);
+          if (Number.isFinite(v) && v > 0 && v <= 900) { left = v; mostrar(); haptic(); }
+          return;
+        }
+        left = Number(b.dataset.preset);
+        mostrar(); haptic();
+      }));
+
+      restTimer = setInterval(() => {
+        left--;
+        mostrar();
         if (left <= 0) { stopRest(); haptic(80); toast('Descanso terminado', 'ok'); }
       }, 1000);
     }

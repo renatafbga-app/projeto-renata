@@ -77,6 +77,11 @@ export default {
           <div class="row-body"><div class="row-title">Dor no joelho</div>
             <div class="row-sub">${t.knee != null ? t.knee + '/10 hoje' : 'Não registrado hoje'}</div></div>
           <span class="row-chevron">${icon('chevron', 15)}</span></a>
+        <a class="row" href="#/fotos">
+          <div class="row-icon" style="background:rgba(191,90,242,.18);color:#BF5AF2">${icon('grid', 18)}</div>
+          <div class="row-body"><div class="row-title">Evolução por fotos</div>
+            <div class="row-sub">Registre seu progresso visual</div></div>
+          <span class="row-chevron">${icon('chevron', 15)}</span></a>
         <a class="row" href="#/humor">
           <div class="row-icon teal">${icon('smile', 18)}</div>
           <div class="row-body"><div class="row-title">Humor</div>

@@ -21,7 +21,7 @@
  * ========================================================================== */
 
 export const DB_NAME = 'projeto-renata-user';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;   // v2: store `photos` (Evolução por Fotos)
 
 /** Prefixo de TODAS as chaves de usuário no localStorage. */
 export const LS_PREFIX = 'pr.user.';
@@ -71,6 +71,21 @@ export const STORES = {
     ]
   },
 
+  /**
+   * Evolução por Fotos. Um registro por data, com até 4 ângulos.
+   * As imagens são guardadas como data URL (JPEG comprimido no aparelho),
+   * e não como Blob, por dois motivos: entram no backup JSON sem conversão
+   * e sobrevivem a exportar/importar sem perda.
+   * id = `${profile}:${date}`
+   */
+  photos: {
+    keyPath: 'id',
+    indexes: [
+      { name: 'profile', keyPath: 'profile' },
+      { name: 'profile_date', keyPath: ['profile', 'date'] }
+    ]
+  },
+
   /** Metadados internos: versão de schema, migrações aplicadas, carimbos. */
   meta: { keyPath: 'key' }
 };
@@ -85,6 +100,37 @@ export const DAILY_KINDS = ['weight', 'measures', 'water', 'meals', 'sleep', 'mo
  */
 export const MIGRATIONS = [];
 
+/** Ângulos fotografados, na ordem em que aparecem na tela. */
+export const PHOTO_SLOTS = [
+  { key: 'front', nome: 'Frente' },
+  { key: 'right', nome: 'Perfil direito' },
+  { key: 'left',  nome: 'Perfil esquerdo' },
+  { key: 'back',  nome: 'Costas' }
+];
+
+/** Medidas corporais registradas, em centímetros. */
+export const MEASURE_FIELDS = [
+  { key: 'waist',   nome: 'Cintura' },
+  { key: 'abdomen', nome: 'Abdômen' },
+  { key: 'hip',     nome: 'Quadril' },
+  { key: 'armR',    nome: 'Braço direito' },
+  { key: 'armL',    nome: 'Braço esquerdo' },
+  { key: 'thighR',  nome: 'Coxa direita' },
+  { key: 'thighL',  nome: 'Coxa esquerda' },
+  { key: 'calfR',   nome: 'Panturrilha direita' },
+  { key: 'calfL',   nome: 'Panturrilha esquerda' }
+];
+
+/** Categorias da Central de Lembretes. */
+export const REMINDER_CATEGORIES = [
+  { key: 'water',    nome: 'Água',        tipo: 'horarios' },
+  { key: 'workout',  nome: 'Treino',      tipo: 'horarios' },
+  { key: 'meals',    nome: 'Alimentação', tipo: 'horarios' },
+  { key: 'weight',   nome: 'Peso',        tipo: 'semanal'  },
+  { key: 'measures', nome: 'Medidas',     tipo: 'intervalo' },
+  { key: 'photos',   nome: 'Fotos',       tipo: 'intervalo' }
+];
+
 /** Valores padrão das configurações. Merge raso na leitura → novas chaves em
  *  versões futuras aparecem automaticamente sem apagar as escolhas do usuário. */
 export const DEFAULT_SETTINGS = {
@@ -96,9 +142,16 @@ export const DEFAULT_SETTINGS = {
   workoutTime: '18:00',
   mealTimes: { breakfast: '07:00', lunch: '12:30', dinner: '19:30' },
   freeMode: false,          // false = dias desbloqueiam em sequência
+  calorieGoal: 1700,        // meta diária do diário nutricional
+  proteinGoal: 110,         // gramas
   reminders: {
     enabled: true,
-    workout: true, water: true, meals: false, weight: true, sleep: false
+    water:    { on: true,  times: ['08:00', '10:30', '13:00', '15:30', '18:00', '20:30'] },
+    workout:  { on: true,  times: ['18:00'] },
+    meals:    { on: false, times: ['07:00', '12:30', '19:30'] },
+    weight:   { on: true,  weekday: 0, time: '08:00' },   // 0 = domingo
+    measures: { on: true,  everyDays: 15, time: '08:30' },
+    photos:   { on: true,  everyDays: 30, time: '09:00' }
   },
   units: { weight: 'kg', length: 'cm', volume: 'ml' }
 };
