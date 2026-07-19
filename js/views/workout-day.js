@@ -3,6 +3,7 @@ import { esc, fmtDate, fmtTime } from '../ui.js';
 import { PROGRAM } from '../../data/program.data.js';
 import { EXERCISES } from '../../data/exercises.data.js';
 import { figure } from '../../data/figures.data.js';
+import { acharAlongamento } from '../../data/stretches.data.js';
 import * as store from '../core/store.js';
 
 const byKey = k => EXERCISES.find(e => e.key === k);
@@ -73,9 +74,24 @@ export default {
       ${d.cardio ? `<div class="section-header"><span class="section-title">Cardio</span></div>
         <div class="card tight"><div class="tiny">${esc(d.cardio)}</div></div>` : ''}
 
-      <div class="section-header"><span class="section-title">Alongamento final</span></div>
-      <div class="card tight"><div class="tiny muted">
-        Quadríceps, Posterior, Panturrilha, Glúteos, Lombar, Peitoral, Ombros — 30 s cada.</div></div>
+      <div class="section-header">
+        <span class="section-title">Alongamento final</span>
+        <a class="section-action" href="#/alongamentos">Ver todos</a>
+      </div>
+      <div class="list">
+        ${(d.stretches || []).map(k => {
+          const a = acharAlongamento(k);
+          if (!a) return '';
+          return `<a class="row" href="#/alongamentos/${a.id}">
+            <div class="ex-thumb" style="width:42px;height:42px">${figure(a.key)}</div>
+            <div class="row-body">
+              <div class="row-title">${esc(a.curto)}</div>
+              <div class="row-sub">${esc(a.tempo)}</div>
+            </div>
+            <span class="chip accent">Ver como fazer</span>
+          </a>`;
+        }).join('')}
+      </div>
 
       ${history}
       <div style="height:12px"></div>

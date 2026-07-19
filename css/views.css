@@ -361,3 +361,11 @@
   transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
 }
 .rest-preset:active { transform: scale(.93); background: var(--accent); color: #fff; }
+
+/* ---------------- SELETOR DE QUANTIDADE (diário alimentar) ---------------- */
+.medida-box {
+  background: var(--bg-elev-2); border-radius: var(--r-md);
+  padding: 12px var(--sp-4); font-size: var(--fs-callout);
+  font-weight: 600; color: var(--accent); text-align: center;
+}
+.stepper .input.value { text-align: center; font-weight: 700; font-size: var(--fs-title); }

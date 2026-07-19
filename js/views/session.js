@@ -6,6 +6,7 @@ import { icon } from '../icons.js';
 import { qs, qsa, esc, toast, haptic, fmtTime, sheet } from '../ui.js';
 import { PROGRAM } from '../../data/program.data.js';
 import { figure } from '../../data/figures.data.js';
+import { acharAlongamento } from '../../data/stretches.data.js';
 import * as store from '../core/store.js';
 import { flashSaved } from '../core/autosave.js';
 import * as notif from '../core/notifications.js';
@@ -97,6 +98,25 @@ export default {
             placeholder="Observações deste exercício…" data-note="${i}">${esc(prev?.note || '')}</textarea>
         </article>`;
       }).join('')}
+
+      <div class="section-header">
+        <span class="section-title">Alongamento final</span>
+        <a class="section-action" href="#/alongamentos">Ver todos</a>
+      </div>
+      <div class="list">
+        ${(d.stretches || []).map(k => {
+          const a = acharAlongamento(k);
+          if (!a) return '';
+          return `<a class="row" href="#/alongamentos/${a.id}">
+            <div class="ex-thumb" style="width:38px;height:38px">${figure(a.key)}</div>
+            <div class="row-body">
+              <div class="row-title">${esc(a.curto)}</div>
+              <div class="row-sub">${esc(a.tempo)}</div>
+            </div>
+            <span class="chip accent">Ver como fazer</span>
+          </a>`;
+        }).join('')}
+      </div>
 
       <button class="btn primary block" id="finishBtn" style="margin-top:8px">
         ${icon('trophy', 19)} Finalizar treino</button>

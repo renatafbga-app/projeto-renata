@@ -1,9 +1,24 @@
 import { icon } from '../icons.js';
 import { qs, qsa, esc } from '../ui.js';
 import { EXERCISES } from '../../data/exercises.data.js';
+import { STRETCHES } from '../../data/stretches.data.js';
 import { figure } from '../../data/figures.data.js';
 
-const GROUPS = [...new Set(EXERCISES.map(e => e.grupo))];
+const GRUPO_ALONG = 'ALONGAMENTOS';
+const GROUPS = [...new Set(EXERCISES.map(e => e.grupo)), GRUPO_ALONG];
+
+/* Os alongamentos entram no mesmo catálogo, com o mesmo cartão e a mesma
+   navegação dos exercícios — só mudam a rota e a categoria. */
+const cardAlongamento = a => `
+  <a class="lib-card" href="#/alongamentos/${a.id}"
+     data-name="${esc((a.nome + ' ' + a.regiao + ' ' + a.musculos + ' alongamento').toLowerCase())}"
+     data-group="${GRUPO_ALONG}">
+    <div class="lib-fig">${figure(a.key)}</div>
+    <div class="lib-body">
+      <div class="lib-name">${esc(a.curto)}</div>
+      <div class="lib-group">${esc(a.regiao)}</div>
+    </div>
+  </a>`;
 
 const card = e => `
   <a class="lib-card" href="#/biblioteca/${e.id}" data-name="${esc((e.nome + ' ' + e.musculos + ' ' + e.grupo).toLowerCase())}" data-group="${esc(e.grupo)}">
@@ -16,7 +31,7 @@ const card = e => `
 
 export default {
   title: 'Biblioteca',
-  subtitle: `${EXERCISES.length} exercícios ilustrados`,
+  subtitle: `${EXERCISES.length} exercícios e ${STRETCHES.length} alongamentos`,
   render() {
     return `
       <div class="search">
@@ -27,7 +42,12 @@ export default {
         <button class="week-pill active" data-g="">Todos</button>
         ${GROUPS.map(g => `<button class="week-pill" data-g="${esc(g)}">${esc(g)}</button>`).join('')}
       </div>
-      <div class="lib-grid" id="libGrid">${EXERCISES.map(card).join('')}</div>
+      <a class="btn block" href="#/alongamentos" style="margin-bottom:14px">
+        ${icon('stretch', 19)} Abrir Biblioteca de Alongamentos
+      </a>
+      <div class="lib-grid" id="libGrid">
+        ${EXERCISES.map(card).join('')}${STRETCHES.map(cardAlongamento).join('')}
+      </div>
       <div id="libEmpty" hidden>
         <div class="empty"><div class="empty-title">Nada encontrado</div>
         <div class="empty-text">Tente outro termo de busca.</div></div>

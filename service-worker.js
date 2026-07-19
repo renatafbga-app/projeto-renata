@@ -11,7 +11,7 @@
  *   Para subir uma versão nova, basta alterar CACHE_VERSION abaixo.
  * ========================================================================== */
 
-const CACHE_VERSION = 'v1.4.0';
+const CACHE_VERSION = 'v1.4.1';
 const CACHE = `projeto-renata-${CACHE_VERSION}`;
 
 /** Tudo que o app precisa para abrir offline. */
@@ -29,6 +29,7 @@ const ASSETS = [
   './js/views/water.js', './js/views/nutrition.js', './js/views/sleep.js',
   './js/views/mood.js', './js/views/knee.js', './js/views/journal.js',
   './js/views/settings.js', './js/views/photos.js', './js/views/reminders.js',
+  './js/views/stretch.js', './js/views/stretches.js',
   './data/figures.data.js', './data/exercises.data.js',
   './data/program.data.js', './data/book.data.js', './data/stretches.data.js',
   './data/foods.data.js',

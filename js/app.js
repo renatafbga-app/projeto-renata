@@ -27,6 +27,8 @@ route('/treinos/dia/:n', V('workout-day'));
 route('/sessao/:n',      V('session'));
 route('/biblioteca',     V('library'));
 route('/biblioteca/:id', V('exercise'));
+route('/alongamentos',   V('stretches'));
+route('/alongamentos/:id', V('stretch'));
 route('/progresso',      V('progress'));
 route('/mais',           V('more'));
 route('/peso',           V('weight'));

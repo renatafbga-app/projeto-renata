@@ -15,7 +15,8 @@ const GROUPS = [
     { p: '/diario', i: 'pen',   t: 'Diário',         s: 'Suas anotações' }
   ]},
   { title: 'Conteúdo', items: [
-    { p: '/biblioteca', i: 'grid', t: 'Biblioteca de Exercícios', s: '30 movimentos ilustrados' }
+    { p: '/biblioteca',   i: 'grid',    t: 'Biblioteca de Exercícios', s: '30 movimentos ilustrados' },
+    { p: '/alongamentos', i: 'stretch', t: 'Biblioteca de Alongamentos', s: '7 alongamentos com passo a passo' }
   ]},
   { title: 'Aplicativo', items: [
     { p: '/config', i: 'gear', t: 'Configurações', s: 'Metas, tema, backup' }

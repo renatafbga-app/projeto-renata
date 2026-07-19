@@ -174,6 +174,27 @@ nasceu.
 
 ---
 
+## 5d. Integridade referencial dos alongamentos (v1.4.1)
+
+Até a v1.4.0 a lista de alongamentos ao final do treino era **texto escrito à
+mão** dentro das telas: `"Quadríceps, Posterior, Panturrilha…"`. Não havia como
+verificar se um alongamento citado existia de fato — nem existia ficha alguma.
+
+Agora `data/program.data.js` guarda, em cada dia, o campo `stretches` com as
+**chaves** das fichas em `data/stretches.data.js`. Isso transforma a promessa
+"nenhum treino aponta para alongamento inexistente" numa invariante testável,
+e não numa boa intenção.
+
+Dois testes protegem isso: um verifica que toda chave citada tem ficha, outro
+verifica que nenhuma tela voltou a escrever a lista à mão.
+
+**O que isso já pegou:** ao converter as telas, minha substituição no
+`workout-day.js` falhou em silêncio (o padrão de busca dizia "Posterior de Coxa"
+e o arquivo tinha "Posterior"). O `session.js` foi convertido, o `workout-day.js`
+não — e só o teste percebeu.
+
+---
+
 ## 6. Autosave
 
 Não há botão "Salvar" em lugar nenhum — é o padrão do iOS.
@@ -258,7 +279,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-101 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+120 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

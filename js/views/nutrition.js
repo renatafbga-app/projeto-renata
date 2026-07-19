@@ -2,7 +2,8 @@
 import { icon } from '../icons.js';
 import { qs, qsa, esc, toast, haptic, sheet } from '../ui.js';
 import * as store from '../core/store.js';
-import { buscarAlimentos, calcular, somar, FOODS } from '../../data/foods.data.js';
+import { buscarAlimentos, somar, FOODS, calcularPorQuantidade,
+         descreverMedida, formatarQtd, passoDe } from '../../data/foods.data.js';
 import { bindAutosave } from '../core/autosave.js';
 import { refresh } from '../router.js';
 
@@ -90,9 +91,11 @@ export default {
               ${itens.map((it, i) => `
                 <div class="food-item">
                   <div class="grow">
-                    <div class="food-nome">${esc(it.nome)}</div>
+                    <div class="food-nome">
+                      ${it.medidaTexto ? `<strong>${esc(it.medidaTexto)}</strong> · ` : ''}${esc(it.nome)}
+                    </div>
                     <div class="food-macros">
-                      ${it.gramas} g · ${it.kcal} kcal · P ${it.p} · C ${it.c} · G ${it.g}
+                      ${it.gramas ? `${it.gramas} g · ` : ''}${it.kcal} kcal · P ${it.p} · C ${it.c} · G ${it.g}
                     </div>
                   </div>
                   <button class="row-chevron" data-remover="${r.key}:${i}" aria-label="Remover alimento">
@@ -211,39 +214,90 @@ export default {
           campo.addEventListener('input', () => desenhar(buscarAlimentos(campo.value)));
 
           function escolherQuantidade(food) {
+            const passo = passoDe(food);
+            let qtd = 1;
+
             area.innerHTML = `
               <div class="card">
                 <div class="row-title">${esc(food.nome)}</div>
-                <div class="row-sub" style="margin-bottom:12px">
+                <div class="row-sub" style="margin-bottom:14px">
                   ${food.kcal} kcal por 100 g
                 </div>
+
                 <div class="field">
-                  <label class="field-label" for="fQtd">Quantidade (gramas)</label>
-                  <input class="input" type="number" inputmode="numeric" id="fQtd"
-                         value="${food.porcao}" min="1" max="3000">
+                  <label class="field-label">Medida</label>
+                  <div class="medida-box" id="qMedida"></div>
                 </div>
-                <p class="tiny muted" style="margin-bottom:12px">
-                  Porção de referência: ${food.porcao} g (${esc(food.medida)}).
-                </p>
-                <div class="card tight" id="fPrevia"></div>
-                <button class="btn primary block mt-2" id="fConfirmar">Adicionar</button>
+
+                <div class="field">
+                  <label class="field-label" for="qCampo">Quantidade</label>
+                  <div class="stepper">
+                    <button type="button" id="qMenos" aria-label="Diminuir">−</button>
+                    <input class="input value" id="qCampo" type="number"
+                           inputmode="decimal" step="${passo}" min="${passo}" value="1"
+                           style="max-width:110px">
+                    <button type="button" id="qMais" aria-label="Aumentar">+</button>
+                  </div>
+                  ${food.frac
+                    ? `<p class="tiny muted" style="margin:8px 0 0 4px">
+                         Aceita meia porção: 0,5 · 1,5 · 2,5…</p>`
+                    : ''}
+                </div>
+
+                <div class="card tight" id="qPrevia" style="background:var(--bg-elev-2)"></div>
+                <button class="btn primary block mt-2" id="qConfirmar">Adicionar ao diário</button>
               </div>`;
-            const qtd = qs('#fQtd', area);
-            const previa = qs('#fPrevia', area);
+
+            const campo = qs('#qCampo', area);
+            const previa = qs('#qPrevia', area);
+            const medidaBox = qs('#qMedida', area);
+
             const atualizar = () => {
-              const m = calcular(food, qtd.value);
-              previa.innerHTML = `<div class="spread">
-                <strong>${m.kcal} kcal</strong>
-                <span class="tiny muted">P ${m.p} g · C ${m.c} g · G ${m.g} g · Fibra ${m.f} g</span>
-              </div>`;
+              const m = calcularPorQuantidade(food, qtd);
+              medidaBox.textContent = descreverMedida(food, qtd);
+              previa.innerHTML = `
+                <div class="spread" style="margin-bottom:8px">
+                  <strong style="font-size:var(--fs-headline)">${m.kcal} kcal</strong>
+                  <span class="tiny muted">${m.gramas} g</span>
+                </div>
+                <div class="macro-grid" style="margin-top:0">
+                  <div class="macro"><div class="macro-v">${m.p}<small>g</small></div>
+                    <div class="macro-l">Proteína</div></div>
+                  <div class="macro"><div class="macro-v">${m.c}<small>g</small></div>
+                    <div class="macro-l">Carbo</div></div>
+                  <div class="macro"><div class="macro-v">${m.g}<small>g</small></div>
+                    <div class="macro-l">Gordura</div></div>
+                  <div class="macro"><div class="macro-v">${m.f}<small>g</small></div>
+                    <div class="macro-l">Fibra</div></div>
+                </div>`;
             };
+
+            const definir = novo => {
+              const limpo = Math.round(Math.max(passo, Math.min(99, novo)) / passo) * passo;
+              qtd = +limpo.toFixed(1);
+              campo.value = formatarQtd(qtd).replace(',', '.');
+              atualizar();
+            };
+
+            qs('#qMenos', area).addEventListener('click', () => { definir(qtd - passo); haptic(); });
+            qs('#qMais',  area).addEventListener('click', () => { definir(qtd + passo); haptic(); });
+            campo.addEventListener('input', () => {
+              const v = parseFloat(String(campo.value).replace(',', '.'));
+              if (Number.isFinite(v) && v > 0) { qtd = v; atualizar(); }
+            });
+            campo.addEventListener('blur', () => definir(qtd));
+
             atualizar();
-            qtd.addEventListener('input', atualizar);
-            qs('#fConfirmar', area).addEventListener('click', async () => {
-              const gramas = parseInt(qtd.value, 10);
-              if (!Number.isFinite(gramas) || gramas <= 0)
-                return toast('Informe uma quantidade maior que zero.');
-              await adicionarItem(refeicao, { nome: food.nome, gramas, ...calcular(food, gramas) });
+
+            qs('#qConfirmar', area).addEventListener('click', async () => {
+              if (!(qtd > 0)) return toast('Informe uma quantidade maior que zero.');
+              const m = calcularPorQuantidade(food, qtd);
+              // UM único lançamento com a quantidade escolhida
+              await adicionarItem(refeicao, {
+                nome: food.nome, foodId: food.id,
+                qtd, medidaTexto: descreverMedida(food, qtd),
+                gramas: m.gramas, kcal: m.kcal, p: m.p, c: m.c, g: m.g, f: m.f
+              });
               fechar();
             });
           }
@@ -293,7 +347,7 @@ export default {
         [refeicao]: { ...(atual[refeicao] || {}), itens }
       });
       haptic();
-      toast(`${item.nome} adicionado`, 'ok');
+      toast(`${item.medidaTexto ? item.medidaTexto + ' · ' : ''}${item.nome} adicionado`, 'ok');
       refresh();
     }
   }
