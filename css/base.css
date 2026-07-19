@@ -1,0 +1,167 @@
+/* ============================================================
+   Reset, base e chrome do app (splash, navbar, tabbar)
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  height: 100%;
+  background: var(--bg);
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--label);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  transition: background var(--dur-med) var(--ease-out),
+              color var(--dur-med) var(--ease-out);
+}
+
+h1, h2, h3, h4, p, figure { margin: 0; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+a { color: var(--accent); text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+
+/* Impede seleção acidental ao tocar, exceto em conteúdo de leitura */
+body { -webkit-user-select: none; user-select: none; }
+.selectable, .prose, input, textarea { -webkit-user-select: text; user-select: text; }
+
+/* Rolagem com inércia iOS */
+.app { -webkit-overflow-scrolling: touch; }
+
+/* ---------------- SPLASH ---------------- */
+.splash {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: var(--sp-3);
+  background: var(--bg);
+  transition: opacity var(--dur-slow) var(--ease-out),
+              visibility var(--dur-slow);
+}
+.splash.hide { opacity: 0; visibility: hidden; }
+.splash-mark { animation: pop .6s var(--ease-spring) both; }
+.splash-title {
+  font-size: var(--fs-caption); font-weight: 700;
+  letter-spacing: 3.5px; color: var(--label-2);
+  animation: rise .5s .18s var(--ease-out) both;
+}
+.splash-sub {
+  font-size: var(--fs-footnote); color: var(--label-3);
+  animation: rise .5s .28s var(--ease-out) both;
+}
+@keyframes pop  { from { transform: scale(.7); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+@keyframes rise { from { transform: translateY(8px); opacity: 0 } to { transform: none; opacity: 1 } }
+
+/* ---------------- NAVBAR ---------------- */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+  padding-top: var(--safe-top);
+  background: var(--bg-blur);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: .5px solid transparent;
+  transition: border-color var(--dur-fast) linear;
+}
+.navbar.scrolled { border-bottom-color: var(--separator); }
+
+.navbar-bar {
+  height: var(--navbar-h);
+  display: flex; align-items: center;
+  padding: 0 var(--gutter);
+  gap: var(--sp-2);
+}
+.navbar-back {
+  display: inline-flex; align-items: center; gap: 2px;
+  color: var(--accent); font-size: var(--fs-headline);
+  margin-left: -6px; padding: 6px 6px 6px 0;
+  transition: opacity var(--dur-fast);
+}
+.navbar-back:active { opacity: .45; }
+.navbar-compact-title {
+  flex: 1; text-align: center;
+  font-size: var(--fs-headline); font-weight: 600;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.navbar.scrolled .navbar-compact-title { opacity: 1; transform: none; }
+.navbar-actions { display: flex; gap: var(--sp-2); align-items: center; }
+
+.navbar-large {
+  padding: 0 var(--gutter) var(--sp-3);
+  transition: opacity var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+  transform-origin: left center;
+}
+.navbar.scrolled .navbar-large {
+  opacity: 0; transform: translateY(-6px) scale(.96);
+  pointer-events: none;
+}
+.navbar-large h1 {
+  font-size: var(--fs-large-title);
+  font-weight: 700; letter-spacing: -.7px;
+}
+.navbar-subtitle {
+  font-size: var(--fs-subhead); color: var(--label-2);
+  margin-top: 2px;
+}
+.navbar-subtitle:empty { display: none; }
+
+/* ---------------- ÁREA DE CONTEÚDO ---------------- */
+.app {
+  min-height: 100%;
+  padding: calc(var(--safe-top) + var(--navbar-h) + 62px)
+           var(--gutter)
+           calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-7));
+  padding-left: max(var(--gutter), var(--safe-left));
+  padding-right: max(var(--gutter), var(--safe-right));
+}
+/* Telas internas (com botão voltar) não têm título grande */
+.app.compact { padding-top: calc(var(--safe-top) + var(--navbar-h) + var(--sp-3)); }
+
+/* Transição entre telas */
+.view { animation: viewIn var(--dur-med) var(--ease-out) both; }
+.view.back { animation: viewBack var(--dur-med) var(--ease-out) both; }
+@keyframes viewIn   { from { opacity: 0; transform: translateX(14px) } to { opacity: 1; transform: none } }
+@keyframes viewBack { from { opacity: 0; transform: translateX(-14px) } to { opacity: 1; transform: none } }
+
+/* ---------------- TAB BAR ---------------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 70;
+  display: flex;
+  height: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--bg-blur);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-top: .5px solid var(--separator);
+}
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  color: var(--label-3);
+  font-size: var(--fs-micro); font-weight: 500;
+  transition: color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-spring);
+}
+.tab svg { width: 25px; height: 25px; }
+.tab:active { transform: scale(.9); }
+.tab.active { color: var(--accent); }
+
+/* Acessibilidade: respeita quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

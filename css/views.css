@@ -1,0 +1,251 @@
+/* ============================================================
+   Estilos específicos de cada módulo
+   ============================================================ */
+
+/* ---------------- INÍCIO ---------------- */
+.hero {
+  background: linear-gradient(155deg, var(--accent), #C4523A 70%);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5);
+  color: #fff;
+  position: relative; overflow: hidden;
+  margin-bottom: var(--sp-4);
+}
+.hero::after {
+  content: ""; position: absolute; width: 190px; height: 190px;
+  border-radius: 50%; background: rgba(255,255,255,.10);
+  top: -70px; right: -60px;
+}
+.hero-kicker {
+  font-size: var(--fs-micro); font-weight: 700;
+  letter-spacing: 2px; opacity: .85;
+}
+.hero-title { font-size: 28px; font-weight: 700; letter-spacing: -.6px; margin: 6px 0 2px; }
+.hero-sub { font-size: var(--fs-subhead); opacity: .9; }
+.hero-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-4); position: relative; }
+.hero .btn.primary { background: #fff; color: var(--accent); }
+.hero .btn { background: rgba(255,255,255,.18); color: #fff; }
+
+.rings { display: flex; gap: var(--sp-3); justify-content: space-around; }
+.ring-item { text-align: center; }
+
+/* ---------------- LIVRO ---------------- */
+.chapter-row .row-icon {
+  background: var(--accent-soft); color: var(--accent);
+  font-weight: 700; font-size: var(--fs-footnote);
+}
+/* Os estilos de .prose vivem em css/book.css — arquivo único e
+   autoritativo para o conteúdo do livro. Duplicá-los aqui causava
+   sobrescritas silenciosas conforme a ordem de carga. */
+
+.figure {
+  background: var(--bg-elev-2);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3);
+  display: grid; place-items: center;
+  margin: var(--sp-3) 0;
+}
+.figure svg { width: 100%; max-width: 220px; height: auto; }
+
+/* ---------------- TREINOS ---------------- */
+.week-strip { display: flex; gap: var(--sp-2); overflow-x: auto; padding: 2px 0 var(--sp-3); }
+.week-strip::-webkit-scrollbar { display: none; }
+.week-pill {
+  flex-shrink: 0; padding: 8px 15px; border-radius: var(--r-full);
+  background: var(--bg-elev-1); color: var(--label-2);
+  font-size: var(--fs-footnote); font-weight: 600;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.week-pill.active { background: var(--accent); color: #fff; }
+
+.day-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--sp-2); }
+.day-cell {
+  background: var(--bg-elev-1);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-2);
+  text-align: center;
+  position: relative;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+.day-cell:active { transform: scale(.95); }
+.day-cell .n { font-size: var(--fs-title); font-weight: 700; letter-spacing: -.4px; }
+.day-cell .t { font-size: 10px; color: var(--label-2); margin-top: 2px; line-height: 1.25; }
+.day-cell.done { background: rgba(48,209,88,.14); }
+.day-cell.done .n { color: var(--green); }
+.day-cell.today { outline: 2px solid var(--accent); outline-offset: -2px; }
+.day-cell.locked { opacity: .38; }
+.day-badge {
+  position: absolute; top: 6px; right: 6px;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--green); color: #fff;
+}
+.day-badge svg { width: 10px; height: 10px; }
+
+/* ---------------- SESSÃO DE TREINO ---------------- */
+.ex-card {
+  background: var(--bg-elev-1);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  transition: background var(--dur-med) var(--ease-out);
+}
+.ex-card.done { background: rgba(48,209,88,.10); }
+.ex-head { display: flex; gap: var(--sp-3); align-items: center; }
+.ex-thumb {
+  width: 62px; height: 62px; border-radius: var(--r-md);
+  background: var(--bg-elev-2); flex-shrink: 0;
+  display: grid; place-items: center; overflow: hidden;
+}
+.ex-thumb svg { width: 100%; height: 100%; }
+.ex-name { font-size: var(--fs-headline); font-weight: 600; letter-spacing: -.2px; }
+.ex-meta { font-size: var(--fs-footnote); color: var(--label-2); margin-top: 2px; }
+.ex-check {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--label-4); flex-shrink: 0;
+  display: grid; place-items: center;
+  transition: background var(--dur-med) var(--ease-spring),
+              border-color var(--dur-med), transform var(--dur-fast);
+}
+.ex-check svg { width: 16px; height: 16px; color: transparent; }
+.ex-card.done .ex-check { background: var(--green); border-color: var(--green); }
+.ex-card.done .ex-check svg { color: #fff; }
+.ex-check:active { transform: scale(.88); }
+
+.set-table { margin-top: var(--sp-3); }
+.set-row {
+  display: grid; grid-template-columns: 26px 1fr 1fr 34px;
+  gap: var(--sp-2); align-items: center;
+  padding: 5px 0;
+}
+.set-row .idx {
+  font-size: var(--fs-footnote); font-weight: 700;
+  color: var(--label-3); text-align: center;
+}
+.set-row .input { padding: 9px var(--sp-3); font-size: var(--fs-subhead); text-align: center; }
+.set-head {
+  font-size: 10px; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--label-3); font-weight: 700;
+}
+.set-done {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--fill); display: grid; place-items: center;
+  transition: background var(--dur-fast);
+}
+.set-done.on { background: var(--green); color: #fff; }
+.set-done svg { width: 15px; height: 15px; }
+
+/* Cronômetro de descanso */
+.rest-bar {
+  position: fixed; left: var(--gutter); right: var(--gutter);
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-3));
+  z-index: 90;
+  background: var(--bg-elev-3);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4);
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: var(--sp-3);
+  animation: toastIn var(--dur-med) var(--ease-spring) both;
+}
+.rest-time {
+  font-size: 26px; font-weight: 700;
+  font-variant-numeric: tabular-nums; letter-spacing: -.5px;
+  min-width: 74px;
+}
+.rest-label { font-size: var(--fs-micro); color: var(--label-2); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ---------------- BIBLIOTECA ---------------- */
+.search {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: var(--bg-elev-2); border-radius: var(--r-md);
+  padding: 10px var(--sp-3); margin-bottom: var(--sp-3);
+}
+.search input { flex: 1; background: none; border: 0; outline: none; font-size: var(--fs-callout); }
+.search svg { width: 18px; height: 18px; color: var(--label-3); }
+
+.lib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.lib-card {
+  background: var(--bg-elev-1); border-radius: var(--r-lg);
+  overflow: hidden; text-align: left;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+.lib-card:active { transform: scale(.96); }
+.lib-fig { background: var(--bg-elev-2); aspect-ratio: 1/1; display: grid; place-items: center; }
+.lib-fig svg { width: 88%; height: 88%; }
+.lib-body { padding: var(--sp-3); }
+.lib-name { font-size: var(--fs-subhead); font-weight: 600; line-height: 1.3; }
+.lib-group { font-size: 10px; color: var(--label-2); letter-spacing: .6px; text-transform: uppercase; margin-top: 3px; }
+
+/* ---------------- ÁGUA ---------------- */
+.water-glass {
+  width: 128px; height: 168px; margin: 0 auto var(--sp-4);
+  border: 3px solid var(--label-4);
+  border-top: 0; border-radius: 0 0 22px 22px;
+  position: relative; overflow: hidden;
+}
+.water-level {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #4FC3F7, #0A84FF);
+  transition: height var(--dur-slow) var(--ease-out);
+}
+.water-level::after {
+  content: ""; position: absolute; top: -6px; left: 0; right: 0; height: 12px;
+  background: #4FC3F7; border-radius: 50%; opacity: .55;
+  animation: wave 2.6s ease-in-out infinite;
+}
+@keyframes wave { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-3px) } }
+
+/* ---------------- HUMOR ---------------- */
+.mood-row { display: flex; justify-content: space-between; gap: var(--sp-2); }
+.mood-btn {
+  flex: 1; aspect-ratio: 1/1; border-radius: var(--r-md);
+  background: var(--bg-elev-2); font-size: 28px;
+  display: grid; place-items: center;
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
+}
+.mood-btn:active { transform: scale(.9); }
+.mood-btn.active { background: var(--accent-soft); outline: 2px solid var(--accent); }
+
+/* ---------------- ESCALA DE DOR ---------------- */
+.pain-scale { display: flex; gap: 5px; }
+.pain-dot {
+  flex: 1; aspect-ratio: 1/1; border-radius: 8px;
+  background: var(--bg-elev-2);
+  font-size: var(--fs-footnote); font-weight: 700; color: var(--label-3);
+  display: grid; place-items: center;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+.pain-dot:active { transform: scale(.88); }
+.pain-dot.active { color: #fff; }
+
+/* ---------------- GRÁFICOS ---------------- */
+.chart { width: 100%; height: 172px; }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.chart-area { fill: var(--accent-soft); }
+.chart-dot  { fill: var(--accent); }
+.chart-grid { stroke: var(--separator); stroke-width: 1; }
+.chart-axis { fill: var(--label-3); font-size: 10px; }
+.chart-bar  { fill: var(--accent); }
+
+/* ---------------- DIÁRIO ---------------- */
+.journal-entry {
+  background: var(--bg-elev-1); border-radius: var(--r-lg);
+  padding: var(--sp-4); margin-bottom: var(--sp-3);
+}
+.journal-date {
+  font-size: var(--fs-micro); font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 5px;
+}
+.journal-text { font-size: var(--fs-subhead); line-height: 1.55; white-space: pre-wrap; }
+
+/* ---------------- PERFORMANCE ----------------
+   A Biblioteca desenha 30 cartões com SVG inline e a sessão de treino até 6
+   fichas. content-visibility deixa o navegador pular o layout/paint do que
+   está fora da tela, reduzindo o custo de rolagem em telefones mais antigos.
+   contain-intrinsic-size evita que a barra de rolagem "pule" ao revelar. */
+.lib-card      { content-visibility: auto; contain-intrinsic-size: auto 190px; }
+.ex-card       { content-visibility: auto; contain-intrinsic-size: auto 260px; }
+.journal-entry { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+
+/* Evita repaint da barra inferior durante a rolagem no iOS */
+.tabbar, .navbar { will-change: transform; }
