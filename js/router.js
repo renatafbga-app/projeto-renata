@@ -104,7 +104,35 @@ async function render() {
   const match = parse();
   const app = qs('#app');
 
-  if (!match) { go('/'); return; }
+  /* CORREÇÃO (v1.4.2): antes uma rota desconhecida redirecionava para a tela
+     inicial em silêncio. O sintoma na mão da usuária era "toco no botão e volto
+     para a Home", sem nenhuma pista do motivo — foi assim que uma versão com
+     arquivos em cache desatualizados passou por toda uma homologação.
+     Agora a falha é explícita e diagnosticável no próprio aparelho. */
+  if (!match) {
+    console.error('[router] rota não registrada:', match?.path ?? location.hash);
+    app.classList.add('compact');
+    qs('#navLarge').hidden = true;
+    qs('#navBack').hidden = false;
+    qs('#navCompactTitle').textContent = 'Tela não encontrada';
+    app.innerHTML = `
+      <div class="empty">
+        <div class="empty-title">Não encontrei esta tela</div>
+        <div class="empty-text">
+          O endereço <code>${(location.hash || '#/').replace(/[<>&]/g, '')}</code>
+          não corresponde a nenhuma tela deste aplicativo.
+        </div>
+        <div class="empty-text" style="margin-top:12px">
+          Isso costuma acontecer quando o aparelho ainda tem uma versão antiga
+          guardada. Em Configurações, use <strong>Forçar atualização</strong>.
+        </div>
+        <div class="hstack" style="justify-content:center;margin-top:20px">
+          <a class="btn primary" href="#/">Ir para o início</a>
+          <a class="btn" href="#/config">Abrir Configurações</a>
+        </div>
+      </div>`;
+    return;
+  }
 
   let view;
   try {

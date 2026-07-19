@@ -11,7 +11,7 @@
  *   Para subir uma versão nova, basta alterar CACHE_VERSION abaixo.
  * ========================================================================== */
 
-const CACHE_VERSION = 'v1.4.1';
+const CACHE_VERSION = 'v1.4.2';
 const CACHE = `projeto-renata-${CACHE_VERSION}`;
 
 /** Tudo que o app precisa para abrir offline. */
@@ -38,15 +38,30 @@ const ASSETS = [
 ];
 
 /* ---------------------------------------------------------------- install */
+/* Sem estes arquivos o aplicativo não funciona. Se algum falhar na instalação,
+   abortamos: é melhor continuar na versão antiga, que funciona, do que ativar
+   uma versão pela metade. */
+const CRITICOS = [
+  './index.html', './js/app.js', './js/router.js', './js/ui.js', './js/icons.js',
+  './css/base.css', './css/components.css'
+];
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    // addAll falha inteiro se um arquivo faltar; adicionamos um a um para
-    // que o app continue instalável mesmo se algum recurso opcional sumir.
+    const falhas = [];
     await Promise.all(ASSETS.map(url =>
-      cache.add(new Request(url, { cache: 'reload' })).catch(err =>
-        console.warn('[SW] não consegui cachear', url, err))
+      cache.add(new Request(url, { cache: 'reload' }))
+        .catch(err => { falhas.push(url); console.warn('[SW] não consegui cachear', url, err); })
     ));
+    const criticasQueFalharam = falhas.filter(f => CRITICOS.includes(f));
+    if (criticasQueFalharam.length) {
+      // deixa o cache incompleto para trás e não assume o controle
+      await caches.delete(CACHE);
+      throw new Error('Instalação abortada: arquivos essenciais falharam — ' +
+                      criticasQueFalharam.join(', '));
+    }
+    if (falhas.length) console.warn('[SW] instalado com', falhas.length, 'arquivo(s) opcional(is) faltando');
     await self.skipWaiting();
   })());
 });
@@ -84,32 +99,56 @@ self.addEventListener('fetch', event => {
         cache.put('./index.html', fresh.clone());
         return fresh;
       } catch {
-        return (await caches.match('./index.html')) || Response.error();
+        const cache = await caches.open(CACHE);
+        return (await cache.match('./index.html')) || Response.error();
       }
     })());
     return;
   }
 
+  /* CORREÇÃO CRÍTICA (v1.4.2)
+   * Antes usávamos `caches.match(req)` sem informar o cache. Esse método
+   * procura em TODOS os caches da origem — inclusive em caches antigos que
+   * por algum motivo tenham sobrevivido. O resultado era servir um arquivo
+   * velho indefinidamente: o app.js da versão anterior voltava, sem as rotas
+   * novas, e a navegação caía no fallback para a tela inicial.
+   *
+   * Agora consultamos APENAS o cache da versão atual.
+   *
+   * A estratégia passa a ser stale-while-revalidate: responde na hora com o
+   * que está em cache (rápido e funciona offline) e, em paralelo, busca a
+   * versão nova na rede e atualiza o cache. Na próxima abertura o arquivo já
+   * é o atual — sem depender de duas reaberturas seguidas.
+   */
   event.respondWith((async () => {
-    const hit = await caches.match(req, { ignoreSearch: true });
-    if (hit) return hit;
-    try {
-      const res = await fetch(req);
-      if (res.ok && res.type === 'basic') {
-        const cache = await caches.open(CACHE);
-        cache.put(req, res.clone());
-      }
+    const cache = await caches.open(CACHE);
+    const hit = await cache.match(req, { ignoreSearch: true });
+
+    const naRede = fetch(req).then(res => {
+      if (res && res.ok && res.type === 'basic') cache.put(req, res.clone());
       return res;
-    } catch {
-      return new Response('', { status: 504, statusText: 'Offline' });
-    }
+    }).catch(() => null);
+
+    if (hit) { event.waitUntil(naRede); return hit; }
+
+    const res = await naRede;
+    return res || new Response('', { status: 504, statusText: 'Offline' });
   })());
 });
 
 /* ------------------------------------------------------------- mensagens */
 self.addEventListener('message', event => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
-  if (event.data === 'VERSION') event.source?.postMessage({ version: CACHE_VERSION });
+  if (event.data === 'VERSION') event.source?.postMessage({ type: 'version', version: CACHE_VERSION });
+  /* Limpa TODOS os caches do app a pedido da tela de Configurações.
+     Não toca IndexedDB nem localStorage — os dados da usuária ficam intactos. */
+  if (event.data === 'CLEAR_CACHES') {
+    event.waitUntil((async () => {
+      const chaves = await caches.keys();
+      await Promise.all(chaves.filter(k => k.startsWith('projeto-renata-')).map(k => caches.delete(k)));
+      event.source?.postMessage({ type: 'caches-cleared' });
+    })());
+  }
 });
 
 /* --------------------------------------------------------- push (futuro) */

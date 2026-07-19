@@ -195,6 +195,48 @@ não — e só o teste percebeu.
 
 ---
 
+## 5e. Incidente v1.4.2 — a navegação que voltava para a Home
+
+**Sintoma:** na v1.4.1, tocar em qualquer caminho para os alongamentos
+(Biblioteca, "Ver todos", "Ver como fazer") levava de volta à tela inicial.
+
+**O roteamento estava correto.** Verifiquei as cinco rotas isoladamente: todas
+resolvem, com os parâmetros certos. O código publicado não era o código em
+execução — o aparelho servia arquivos antigos.
+
+**Causa raiz (três defeitos somados):**
+
+1. `caches.match(req)` sem informar o cache **procura em todos os caches da
+   origem**, inclusive nos antigos. Bastava um cache anterior sobreviver para o
+   `app.js` da versão passada voltar a ser servido — sem as rotas novas.
+2. O router mandava rotas desconhecidas para a Home **em silêncio**
+   (`if (!match) { go('/'); return; }`). O defeito ficava invisível: parecia um
+   botão que "volta para o início", não um erro.
+3. A instalação do Service Worker engolia falhas individuais, podendo ativar um
+   cache pela metade como se estivesse completo.
+
+**Correções:**
+
+- Consulta escopada: `cache.match()` no cache da versão atual, nunca global.
+- **Stale-while-revalidate**: responde do cache e atualiza em segundo plano.
+  Uma correção publicada passa a valer na abertura seguinte.
+- Instalação aborta se um arquivo essencial falhar — melhor manter a versão
+  antiga funcionando do que ativar uma quebrada.
+- Rota desconhecida mostra tela de erro com o endereço tentado e atalho para
+  Configurações.
+- Configurações mostra a **versão em execução** (app × cache) e tem
+  **Forçar atualização**, que limpa caches e desregistra o Service Worker sem
+  tocar nos dados.
+
+**O que mudou no processo:** `tools/audit-rotas.mjs` extrai todas as rotas do
+`app.js` e todos os links das telas, e verifica se cada link resolve. Um link
+para rota inexistente deixou de ser invisível.
+
+Validei por reversão: removendo as rotas de alongamento, a auditoria acusa os
+12 links quebrados exatamente nos fluxos reportados.
+
+---
+
 ## 6. Autosave
 
 Não há botão "Salvar" em lugar nenhum — é o padrão do iOS.
@@ -279,7 +321,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-120 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+129 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

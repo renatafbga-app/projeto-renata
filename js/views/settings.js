@@ -112,8 +112,27 @@ export default {
         <div class="row-body"><div class="row-title" style="color:var(--red)">Apagar todos os dados</div>
           <div class="row-sub">Não pode ser desfeito</div></div></button></div>
 
+      <div class="section-header"><span class="section-title">Versão e cache</span></div>
+      <div class="list">
+        <div class="row">
+          <div class="row-icon">${icon('bolt', 18)}</div>
+          <div class="row-body">
+            <div class="row-title">Versão em execução</div>
+            <div class="row-sub" id="versaoInfo">Aplicativo ${APP_VERSION} · consultando cache…</div>
+          </div>
+        </div>
+        <button class="row" id="btnForcar">
+          <div class="row-icon tint">${icon('download', 18)}</div>
+          <div class="row-body">
+            <div class="row-title">Forçar atualização</div>
+            <div class="row-sub">Baixa a versão mais recente sem apagar seus dados</div>
+          </div>
+          <span class="row-chevron">${icon('chevron', 15)}</span>
+        </button>
+      </div>
+
       <p class="tiny muted center mt-4">Projeto Renata · versão ${APP_VERSION}<br>
-        Seus dados ficam only neste aparelho e sobrevivem a atualizações do app.</p>`;
+        Seus dados ficam apenas neste aparelho e sobrevivem a atualizações do app.</p>`;
   },
 
   mount(root, params, ctx = {}) {
@@ -167,6 +186,70 @@ export default {
       a.download = 'peso-projeto-renata.csv';
       a.click(); toast('CSV exportado', 'ok');
     });
+
+    /* versão realmente em execução: compara o app com o cache do Service Worker */
+    (async () => {
+      const alvo = qs('#versaoInfo', root);
+      if (!alvo) return;
+      if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
+        alvo.textContent = `Aplicativo ${APP_VERSION} · sem Service Worker ativo`;
+        return;
+      }
+      const versaoSW = await new Promise(resolve => {
+        const canal = new MessageChannel();
+        const t = setTimeout(() => resolve(null), 1500);
+        navigator.serviceWorker.addEventListener('message', function ouvir(e) {
+          if (e.data?.type === 'version') {
+            clearTimeout(t);
+            navigator.serviceWorker.removeEventListener('message', ouvir);
+            resolve(e.data.version);
+          }
+        });
+        navigator.serviceWorker.controller.postMessage('VERSION');
+      });
+      alvo.textContent = versaoSW
+        ? `Aplicativo ${APP_VERSION} · cache ${versaoSW}`
+        : `Aplicativo ${APP_VERSION} · cache não respondeu`;
+    })();
+
+    /* forçar atualização: limpa caches e recarrega. NÃO toca nos dados. */
+    qs('#btnForcar', root)?.addEventListener('click', () => {
+      sheet({
+        title: 'Forçar atualização',
+        body: `<p class="muted" style="margin-bottom:16px">
+            Isto apaga os arquivos do aplicativo guardados neste aparelho e baixa
+            tudo de novo. <strong>Seus treinos, cargas, fotos e registros não são
+            afetados</strong> — eles ficam em outro lugar, que esta operação não alcança.
+          </p>
+          <p class="tiny muted" style="margin-bottom:16px">
+            Use quando um botão não abrir a tela esperada ou quando uma novidade
+            publicada não aparecer.
+          </p>
+          <button class="btn primary block" id="cfmForcar">Atualizar agora</button>
+          <button class="btn ghost block mt-2" data-dismiss>Cancelar</button>`,
+        onMount(layer, fechar) {
+          qs('#cfmForcar', layer).addEventListener('click', async () => {
+            fechar();
+            toast('Baixando a versão mais recente…');
+            try {
+              if ('caches' in window) {
+                const chaves = await caches.keys();
+                await Promise.all(chaves
+                  .filter(k => k.startsWith('projeto-renata-'))
+                  .map(k => caches.delete(k)));
+              }
+              if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(r => r.unregister()));
+              }
+            } catch (err) {
+              console.warn('[atualização] falha ao limpar cache', err);
+            }
+            setTimeout(() => location.reload(true), 600);
+          });
+        }
+      });
+    }, { signal: ctx.signal });
 
     /* apagar tudo — confirmação dupla, padrão iOS */
     qs('#btnReset', root).addEventListener('click', () => {
