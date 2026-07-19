@@ -112,6 +112,40 @@ o splash de novo.
 
 ---
 
+## 5b. Incidente v1.3.0 — a camada invisível
+
+**Sintoma em produção:** o app abria, o layout aparecia corretamente, e nenhum
+toque funcionava. A URL nunca mudava.
+
+**Causa:** `<div id="sheetLayer" class="sheet-layer" hidden>` no HTML, e no CSS
+`.sheet-layer { position: fixed; inset: 0; z-index: 120; display: flex }`.
+
+O atributo `hidden` é implementado pela folha do **navegador** como
+`[hidden] { display: none }`. Qualquer regra de **autor** que defina `display`
+vence na cascata. O elemento continuava renderizado: uma camada transparente,
+sem fundo próprio, cobrindo a tela inteira acima da tab bar (z-index 70).
+Tudo era desenhado; nada era tocável.
+
+**Correção:** `[hidden] { display: none !important }` em `base.css` — fecha a
+classe inteira do problema. Como defesa em profundidade,
+`.sheet-layer:empty { pointer-events: none }`.
+
+**Por que os 70 testes não pegaram:** todos rodavam em Node com um DOM
+simulado. Nenhum montava a cascata CSS, calculava layout ou testava acerto de
+toque. A cobertura era de lógica; o defeito era de renderização.
+
+**O que mudou no processo:** `tools/audit-dom.mjs` analisa o `index.html` real
+contra o CSS real. Oito testes novos verificam a guarda `[hidden]`, conflitos
+de `display` em elementos escondidos, camadas de tela cheia sem forma de sair
+do caminho, ordem de z-index e a integridade do vigia de inicialização.
+
+Também foi adicionado um **vigia de boot** em `index.html` — script clássico,
+não módulo, porque um módulo que falha não executa. Se o app não sinalizar
+`window.__PR_BOOTED` em 8 segundos, ele esconde o splash e mostra os erros
+capturados. Num telefone não existe console de desenvolvedor.
+
+---
+
 ## 6. Autosave
 
 Não há botão "Salvar" em lugar nenhum — é o padrão do iOS.
@@ -196,7 +230,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-70 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+78 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

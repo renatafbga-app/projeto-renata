@@ -4,6 +4,24 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* ============================================================================
+ * GUARDA DO ATRIBUTO hidden — correção do bug crítico da homologação (v1.3.0)
+ *
+ * O atributo HTML `hidden` é implementado pela folha de estilo do NAVEGADOR
+ * como `[hidden] { display: none }`. Qualquer regra de AUTOR que defina
+ * `display` vence a folha do navegador na cascata — e o elemento volta a ser
+ * exibido, silenciosamente.
+ *
+ * Foi exatamente o que aconteceu: `.sheet-layer { display: flex }` anulava o
+ * `hidden` de <div id="sheetLayer" hidden>, deixando uma camada TRANSPARENTE
+ * de tela inteira (inset: 0, z-index: 120) sobre todo o aplicativo. Tudo era
+ * desenhado corretamente, mas nenhum toque chegava aos elementos por baixo:
+ * a tab bar (z-index 70) e o conteúdo ficavam inalcançáveis.
+ *
+ * Esta regra fecha a classe inteira do problema, para sempre.
+ * ========================================================================== */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0; padding: 0;
   height: 100%;

@@ -229,6 +229,9 @@
   position: fixed; inset: 0; z-index: 120;
   display: flex; align-items: flex-end; justify-content: center;
 }
+/* Defesa em profundidade: mesmo que o `hidden` volte a falhar por algum
+   motivo, uma camada sem conteúdo não pode interceptar toques. */
+.sheet-layer:empty { pointer-events: none; }
 .sheet-backdrop {
   position: absolute; inset: 0;
   background: rgba(0,0,0,.5);

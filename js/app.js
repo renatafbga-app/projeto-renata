@@ -71,6 +71,8 @@ function showInternalReminders(list) {
   renderTabs();
   startRouter();
 
+  // sinaliza ao vigia de inicialização do index.html que o app subiu
+  window.__PR_BOOTED = true;
   setTimeout(() => qs('#splash')?.classList.add('hide'), 380);
 
   // Lembretes só depois da tela pronta, para não atrapalhar a abertura.

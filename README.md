@@ -71,7 +71,7 @@ Depois disso, funciona sem internet.
 node tools/test.mjs
 ```
 
-70 testes, sem navegador. Cobrem dados, regras de negócio, backup e a
+78 testes, sem navegador (inclui auditoria estática de HTML × CSS). Cobrem dados, regras de negócio, backup e a
 renderização das 19 telas.
 
 ---
