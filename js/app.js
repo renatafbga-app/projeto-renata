@@ -8,7 +8,7 @@ import { qs, toast } from './ui.js';
 import * as store from './core/store.js';
 import * as notif from './core/notifications.js';
 
-export const APP_VERSION = '1.4.2';
+export const APP_VERSION = '1.5.0';
 
 /* ---------------------------------------------------------------- tema */
 export function applyTheme(t) {

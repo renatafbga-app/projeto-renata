@@ -71,7 +71,7 @@ Depois disso, funciona sem internet.
 node tools/test.mjs
 ```
 
-129 testes, sem navegador (inclui auditoria de HTML × CSS e de texto renderizado). Cobrem dados, regras de negócio, backup e a
+144 testes, sem navegador (inclui auditoria de HTML × CSS e de texto renderizado). Cobrem dados, regras de negócio, backup e a
 renderização das 19 telas.
 
 ---
@@ -107,7 +107,7 @@ css/                  Design system (5 arquivos, inclui book.css)
 js/core/              Dados, autosave, estatísticas, backup, adaptadores
 js/views/             19 telas
 data/                 Conteúdo integral: 15 capítulos, 30 exercícios, 90 dias,
-                      40 figuras, 7 alongamentos com ficha completa e 58 alimentos
+                      40 figuras, 7 alongamentos com ficha completa e 260 alimentos
 icons/                Ícones do app
 tools/                Testes
 ARCHITECTURE.md       Decisões de arquitetura (leia antes de manter o código)

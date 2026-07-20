@@ -21,7 +21,7 @@
  * ========================================================================== */
 
 export const DB_NAME = 'projeto-renata-user';
-export const DB_VERSION = 2;   // v2: store `photos` (Evolução por Fotos)
+export const DB_VERSION = 3;   // v3: store `foods` (alimentos personalizados)
 
 /** Prefixo de TODAS as chaves de usuário no localStorage. */
 export const LS_PREFIX = 'pr.user.';
@@ -84,6 +84,17 @@ export const STORES = {
       { name: 'profile', keyPath: 'profile' },
       { name: 'profile_date', keyPath: ['profile', 'date'] }
     ]
+  },
+
+  /**
+   * Alimentos da usuária: criados por ela, edições sobre itens do catálogo e
+   * marcações de remoção. O catálogo estático (data/foods.data.js) nunca é
+   * alterado — ele é conteúdo do app. Aqui ficam apenas as diferenças.
+   * id = `${profile}:${foodId}`
+   */
+  foods: {
+    keyPath: 'id',
+    indexes: [{ name: 'profile', keyPath: 'profile' }]
   },
 
   /** Metadados internos: versão de schema, migrações aplicadas, carimbos. */

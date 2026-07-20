@@ -295,16 +295,44 @@ export async function getPhotoSession(date) {
   return (await db.get('photos', pid(date))) || null;
 }
 
-/** Cria ou atualiza o registro de uma data (peso e observação). */
+/**
+ * Cria ou atualiza o registro de uma data.
+ *
+ * FONTE ÚNICA DE VERDADE PARA O PESO (correção v1.5.0)
+ * Antes o peso era gravado dentro do próprio registro fotográfico, separado do
+ * registro diário usado por Peso e Medidas. Resultado: a mesma data podia ter
+ * dois pesos diferentes, e o card "Último peso" das Fotos aparecia vazio mesmo
+ * com peso lançado no módulo Peso.
+ *
+ * Agora o peso mora SEMPRE em `daily/weight`. As Fotos leem e escrevem lá —
+ * não guardam cópia. Qualquer módulo que registre peso alimenta todos os outros.
+ */
 export async function savePhotoSession(date, patch = {}) {
+  const { weight, ...resto } = patch;
+
+  // peso vai para o registro diário, nunca para dentro da foto
+  if (weight !== undefined) {
+    if (Number.isFinite(weight) && weight > 0) {
+      const anterior = await getDaily('weight', date);
+      await setDaily('weight', date, { kg: weight }, anterior?.note || '');
+    }
+  }
+
   const prev = (await getPhotoSession(date)) || {
-    id: pid(date), profile: P(), date, weight: null, note: '',
-    shots: {}, createdAt: now()
+    id: pid(date), profile: P(), date, note: '', shots: {}, createdAt: now()
   };
-  const rec = { ...prev, ...patch, updatedAt: now() };
+  const rec = { ...prev, ...resto, updatedAt: now() };
+  delete rec.weight;                      // limpa cópias de versões anteriores
   await db.put('photos', rec);
   emit('photos', rec);
   return rec;
+}
+
+/** Peso registrado para uma data, venha de onde vier. */
+export async function pesoDoDia(date) {
+  const rec = await getDaily('weight', date);
+  const kg = Number(rec?.value?.kg);
+  return Number.isFinite(kg) && kg > 0 ? kg : null;
 }
 
 /** Grava uma foto num ângulo. `dataURL` já vem comprimido pela view. */
@@ -332,12 +360,34 @@ export async function removePhotoShot(date, slot) {
 export const removePhotoSession = date =>
   db.del('photos', pid(date)).then(() => emit('photos'));
 
-/** Sessões em ordem cronológica, com contagem de fotos já preenchida. */
+/**
+ * Sessões em ordem cronológica, já com o peso do dia vindo de `daily/weight`.
+ * O peso é anexado na leitura (join), nunca duplicado no armazenamento.
+ */
 export async function listPhotoSessions() {
   const rows = await db.byIndex('photos', 'profile', IDBKeyRange.only(P()));
+  const pesos = new Map(
+    (await listDaily('weight')).map(r => [r.date, Number(r.value?.kg)])
+  );
   return rows
-    .map(r => ({ ...r, total: Object.keys(r.shots || {}).length }))
+    .map(r => {
+      const kg = pesos.get(r.date);
+      return {
+        ...r,
+        total: Object.keys(r.shots || {}).length,
+        weight: Number.isFinite(kg) && kg > 0 ? kg : null
+      };
+    })
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Último peso conhecido no aplicativo inteiro, com a data em que foi medido. */
+export async function ultimoPeso() {
+  const linhas = (await listDaily('weight'))
+    .filter(r => Number(r.value?.kg) > 0);
+  if (!linhas.length) return null;
+  const ultima = linhas.at(-1);
+  return { kg: Number(ultima.value.kg), date: ultima.date };
 }
 
 /* ==========================================================================

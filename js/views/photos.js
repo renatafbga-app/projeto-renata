@@ -14,6 +14,10 @@ export default {
   async render() {
     const sessoes = await store.listPhotoSessions();
     const total = sessoes.reduce((n, s) => n + s.total, 0);
+    /* O card usa o último peso do APLICATIVO (módulo Peso, Medidas ou Fotos —
+       todos gravam no mesmo lugar), não apenas o da última sessão fotográfica.
+       Antes ele mostrava "—" mesmo com peso lançado em outro módulo. */
+    const ultimo = await store.ultimoPeso();
 
     if (!sessoes.length) {
       return `
@@ -62,9 +66,9 @@ export default {
         </div>
         <div class="stat" style="padding:12px">
           <div class="stat-value" style="font-size:19px">
-            ${sessoes.at(-1).weight ? esc(sessoes.at(-1).weight) : '—'}<span class="stat-unit">kg</span>
+            ${ultimo ? esc(ultimo.kg) : '—'}<span class="stat-unit">kg</span>
           </div>
-          <div class="stat-label">Último peso</div>
+          <div class="stat-label">${ultimo ? 'Peso em ' + fmtDate(ultimo.date) : 'Último peso'}</div>
         </div>
       </div>
 
@@ -122,8 +126,12 @@ export default {
 
     /* ---------------- registro de uma data ---------------- */
     async function abrirRegistro(date) {
-      const rec = (await store.getPhotoSession(date)) || { date, shots: {}, weight: null, note: '' };
+      const rec = (await store.getPhotoSession(date)) || { date, shots: {}, note: '' };
       const existe = !!rec.createdAt;
+      /* Pré-preenche com o peso já registrado para esta data em qualquer módulo.
+         Se não houver, o campo fica livre para digitar — nunca bloqueado. */
+      const pesoDoDia = await store.pesoDoDia(date);
+      const ultimoConhecido = await store.ultimoPeso();
 
       sheet({
         title: existe ? 'Editar registro' : 'Novo registro',
@@ -135,7 +143,15 @@ export default {
           <div class="field">
             <label class="field-label" for="pfPeso">Peso do dia (kg)</label>
             <input class="input" type="number" step="0.1" inputmode="decimal"
-                   id="pfPeso" placeholder="Opcional" value="${esc(rec.weight ?? '')}">
+                   id="pfPeso" placeholder="${ultimoConhecido ? esc(ultimoConhecido.kg) : 'Ex.: 72,4'}"
+                   value="${esc(pesoDoDia ?? '')}">
+            <p class="tiny muted" style="margin:6px 0 0 4px" id="pfPesoOrigem">
+              ${pesoDoDia
+                ? 'Peso já registrado para esta data — editar aqui atualiza também o módulo Peso.'
+                : ultimoConhecido
+                  ? `Sem peso para esta data. O último foi ${ultimoConhecido.kg} kg em ${fmtDate(ultimoConhecido.date)}.`
+                  : 'Nenhum peso registrado ainda. Informe aqui se quiser.'}
+            </p>
           </div>
           <div class="field">
             <label class="field-label" for="pfNota">Observações</label>
@@ -187,8 +203,17 @@ export default {
           qs('#pfPeso', layer).addEventListener('change', salvarCampos);
           qs('#pfNota', layer).addEventListener('change', salvarCampos);
 
-          dataEl.addEventListener('change', () => {
+          dataEl.addEventListener('change', async () => {
             dataAtual = dataEl.value || store.todayISO();
+            const kg = await store.pesoDoDia(dataAtual);
+            const campoPeso = qs('#pfPeso', layer);
+            const aviso = qs('#pfPesoOrigem', layer);
+            campoPeso.value = kg ?? '';
+            if (aviso) {
+              aviso.textContent = kg
+                ? 'Peso já registrado para esta data — editar aqui atualiza também o módulo Peso.'
+                : 'Sem peso registrado para esta data. Informe aqui se quiser.';
+            }
           });
 
           const receber = async input => {

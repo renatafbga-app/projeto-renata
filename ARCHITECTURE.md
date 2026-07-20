@@ -56,6 +56,7 @@ prefixo, o backup continua capturando.
 | `daily` | `${perfil}:${tipo}:${data}` | Tudo que é "um valor por dia" |
 | `journal` | auto | Entradas livres do diário |
 | `photos` | `${perfil}:${data}` | Evolução por fotos: 4 ângulos em data URL |
+| `foods` | `${perfil}:${alimento}` | Alimentos próprios, edições e remoções |
 | `meta` | `key` | Versão de schema, migrações aplicadas |
 
 **Decisão:** unificamos peso, medidas, água, refeições, sono, humor e joelho num
@@ -237,6 +238,45 @@ Validei por reversão: removendo as rotas de alongamento, a auditoria acusa os
 
 ---
 
+## 5f. Base alimentar em duas camadas (v1.5.0)
+
+O catálogo (`data/foods.data.js`, 260 itens em 11 categorias) é **conteúdo do
+app**: estático, gerado por script, cacheado pelo Service Worker. O store
+`foods` guarda apenas as **diferenças** da usuária — alimentos que ela criou,
+edições sobre itens do catálogo e marcações de remoção.
+
+`js/core/foods.js` mescla as duas camadas na leitura. Consequências:
+
+- o catálogo pode crescer para milhares de itens numa atualização sem tocar nos
+  dados da usuária;
+- o que ela criou sobrevive a qualquer atualização, porque vive do outro lado da
+  fronteira app/dados;
+- editar um item do catálogo não muta o arquivo estático — grava uma diferença,
+  e "restaurar" simplesmente apaga essa diferença.
+
+Favoritos e recentes ficam em `localStorage` com o prefixo `pr.user.`, então
+entram no backup como todo o resto.
+
+**Sobre o tamanho da base:** 260 itens conferidos valem mais que milhares
+gerados sem fonte. Valores nutricionais errados num app de saúde são pior que
+ausência de dados. A importação (`importarAlimentos`) existe justamente para
+crescer com dados de procedência conhecida.
+
+---
+
+## 5g. Fonte única do peso (v1.5.0)
+
+Peso, Medidas e Evolução por Fotos gravam no **mesmo** registro `daily/weight`.
+
+Antes, as Fotos guardavam o peso dentro do próprio registro fotográfico. Duas
+fontes de verdade para o mesmo fato: o card "Último peso" aparecia vazio mesmo
+com peso lançado no módulo Peso, e a mesma data podia ter dois valores.
+
+Agora `savePhotoSession` extrai o peso do patch e grava em `daily/weight`;
+`listPhotoSessions` faz o join na leitura. Não existe cópia para divergir.
+
+---
+
 ## 6. Autosave
 
 Não há botão "Salvar" em lugar nenhum — é o padrão do iOS.
@@ -321,7 +361,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-129 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+144 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

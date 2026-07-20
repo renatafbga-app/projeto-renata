@@ -2,6 +2,7 @@ import { icon } from '../icons.js';
 import { ring, esc } from '../ui.js';
 import * as store from '../core/store.js';
 import * as stats from '../core/stats.js';
+import * as foods from '../core/foods.js';
 import { AI } from '../core/adapters.js';
 import * as notif from '../core/notifications.js';
 
@@ -17,6 +18,12 @@ export default {
       knee: t.knee, streak: o.streak, waterPct: t.waterPct, lost: o.lost
     });
     const due = await notif.dueReminders();
+    // resumo alimentar do dia para o registro rápido
+    const refeicoes = (await store.getDaily('meals', store.todayISO()))?.value || {};
+    const itensHoje = ['breakfast','snack1','lunch','snack2','dinner','supper']
+      .flatMap(k => refeicoes[k]?.itens || []);
+    const kcalHoje = foods.somar(itensHoje).kcal;
+    const metaKcal = store.getSettings().calorieGoal;
 
     return `
       ${due.length ? `
@@ -76,6 +83,13 @@ export default {
           <div class="row-icon" style="background:rgba(255,69,58,.18);color:#FF453A">${icon('knee', 18)}</div>
           <div class="row-body"><div class="row-title">Dor no joelho</div>
             <div class="row-sub">${t.knee != null ? t.knee + '/10 hoje' : 'Não registrado hoje'}</div></div>
+          <span class="row-chevron">${icon('chevron', 15)}</span></a>
+        <a class="row" href="#/alimentacao">
+          <div class="row-icon" style="background:rgba(255,214,10,.18);color:#FFD60A">${icon('meal', 18)}</div>
+          <div class="row-body"><div class="row-title">Alimentação</div>
+            <div class="row-sub">${itensHoje.length
+              ? `${kcalHoje} de ${metaKcal} kcal · ${itensHoje.length} ${itensHoje.length === 1 ? 'item' : 'itens'} hoje`
+              : 'Nada registrado hoje'}</div></div>
           <span class="row-chevron">${icon('chevron', 15)}</span></a>
         <a class="row" href="#/fotos">
           <div class="row-icon" style="background:rgba(191,90,242,.18);color:#BF5AF2">${icon('grid', 18)}</div>
