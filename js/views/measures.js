@@ -1,6 +1,6 @@
 /* Medidas corporais — 9 circunferências + peso, com histórico e gráficos. */
 import { icon } from '../icons.js';
-import { qs, qsa, lineChart, fmtDate, esc, toast, haptic, empty } from '../ui.js';
+import { qsa, lineChart, fmtDate, esc, toast, haptic, empty } from '../ui.js';
 import * as store from '../core/store.js';
 import { MEASURE_FIELDS } from '../core/schema.js';
 import { bindAutosave } from '../core/autosave.js';
@@ -17,7 +17,7 @@ export default {
   title: 'Medidas',
   subtitle: 'Circunferências e evolução',
   async render() {
-    const hoje = store.todayISO();
+    const hoje = store.dataDeTrabalho();
     const rec = await store.getDaily('measures', hoje);
     const v = rec?.value || {};
     const pesoHoje = (await store.getDaily('weight', hoje))?.value?.kg ?? '';
@@ -44,10 +44,6 @@ export default {
       </div>
 
       <div class="card">
-        <div class="field">
-          <label class="field-label" for="mData">Data da medição</label>
-          <input class="input" type="date" id="mData" value="${hoje}">
-        </div>
         <div class="field">
           <label class="field-label" for="mPeso">Peso (kg)</label>
           <input class="input" type="number" step="0.1" inputmode="decimal"
@@ -115,8 +111,7 @@ export default {
 
   mount(root, params, ctx = {}) {
     const sig = { signal: ctx.signal };
-    const dataEl = qs('#mData', root);
-    const dataAtual = () => dataEl.value || store.todayISO();
+    const dataAtual = () => store.dataDeTrabalho();
 
     bindAutosave(root, async (campo, valor) => {
       const n = parseFloat(String(valor).replace(',', '.'));
@@ -129,7 +124,6 @@ export default {
       }
     }, ctx);
 
-    dataEl.addEventListener('change', refresh, sig);
 
     qsa('[data-del]', root).forEach(b => b.addEventListener('click', async () => {
       await store.removeDaily('measures', b.dataset.del);

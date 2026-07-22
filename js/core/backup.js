@@ -8,6 +8,7 @@
 import * as db from './db.js';
 import { STORES, LS_PREFIX, DB_VERSION } from './schema.js';
 import * as store from './store.js';
+import { hojeISO } from './dates.js';
 
 export const BACKUP_FORMAT = 2;
 
@@ -36,7 +37,7 @@ export async function downloadBackup() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `projeto-renata-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `projeto-renata-backup-${hojeISO()}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
   return data;

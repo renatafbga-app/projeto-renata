@@ -11,7 +11,7 @@ export default {
     const rows = await store.listDaily('weight');
     const pts = rows.map(r => ({ date: r.date, v: Number(r.value?.kg) })).filter(p => p.v > 0);
     const cur = pts.at(-1)?.v;
-    const today = await store.getDaily('weight', store.todayISO());
+    const today = await store.getDaily('weight', store.dataDeTrabalho());
     const imc = cur && s.heightCm ? (cur / Math.pow(s.heightCm / 100, 2)).toFixed(1) : null;
 
     return `
@@ -27,9 +27,7 @@ export default {
       </div>
 
       <div class="card">
-        <div class="field"><label class="field-label">Data</label>
-          <input class="input" type="date" id="wDate" value="${store.todayISO()}"></div>
-        <div class="field"><label class="field-label">Peso de hoje (kg)</label>
+        <div class="field"><label class="field-label">Peso em ${fmtDate(store.dataDeTrabalho(), 'weekday')}</label>
           <input class="input" type="number" step="0.1" inputmode="decimal" id="wVal"
             placeholder="Ex.: 72,4" value="${esc(today?.value?.kg ?? '')}" data-save="kg"></div>
         <div class="field mb-0"><label class="field-label">Observações</label>
@@ -51,7 +49,7 @@ export default {
   mount(root, params, ctx = {}) {
     const dateEl = qs('#wDate', root);
     bindAutosave(root, async (field, value) => {
-      const date = dateEl.value || store.todayISO();
+      const date = dateEl.value || store.dataDeTrabalho();
       const prev = await store.getDaily('weight', date);
       if (field === 'kg') {
         const kg = parseFloat(String(value).replace(',', '.'));

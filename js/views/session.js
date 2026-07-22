@@ -276,7 +276,7 @@ export default {
             };
             await store.finishWorkout(day, { durationSec, kcal: d.kcal, checkin });
             // espelha o check-in nos módulos de acompanhamento
-            const today = store.todayISO();
+            const today = store.dataDeTrabalho();
             if (checkin.pain != null) await store.setDaily('knee', today, { level: checkin.pain }, checkin.note);
             if (checkin.mood) await store.setDaily('mood', today, { emoji: checkin.mood });
             notif.cancelWorkoutReminders();

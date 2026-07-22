@@ -17,7 +17,8 @@ export const esc = s => String(s ?? '').replace(/[&<>"']/g,
 
 /* ---------------- Formatação ---------------- */
 export const pad2 = n => String(n).padStart(2, '0');
-export const todayISO = () => new Date().toISOString().slice(0, 10);
+import { hojeISO } from './core/dates.js';
+export const todayISO = hojeISO;   // local, nunca UTC (correção da virada do dia)
 export function fmtDate(iso, style = 'short') {
   const d = new Date(iso + (iso.length === 10 ? 'T12:00:00' : ''));
   if (style === 'long') return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });

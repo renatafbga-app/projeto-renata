@@ -1,5 +1,6 @@
 /* Router por hash — compatível com GitHub Pages e subpastas. */
 import { qs, qsa } from './ui.js';
+import * as datas from './core/dates.js';
 import { icon } from './icons.js';
 
 const routes = [];
@@ -79,7 +80,32 @@ function syncTabs(path) {
 }
 
 /* Navbar */
+/* Telas de registro diário exibem o seletor global de data. */
+const TELAS_COM_DATA = new Set([
+  '/', '/agua', '/peso', '/medidas', '/alimentacao', '/sono',
+  '/humor', '/joelho', '/diario', '/fotos'
+]);
+
+function atualizarBarraData() {
+  const bar = qs('#dateBar');
+  const label = qs('#dateLabel');
+  if (!bar || !label) return;
+  const iso = datas.dataAtiva();
+  label.textContent = datas.rotuloRelativo(iso) +
+    (datas.ehHoje(iso) ? '' : ' · ' + datas.paraData(iso).toLocaleDateString('pt-BR'));
+  label.classList.toggle('hoje', datas.ehHoje(iso));
+  qs('#dateNext').disabled = datas.ehHoje(iso);   // não deixa ir para o futuro
+  const picker = qs('#datePicker');
+  if (picker) { picker.value = iso; picker.max = datas.hojeISO(); }
+}
+
 function setNavbar(view, params) {
+  // mostra a barra de data só nas telas de registro diário
+  const raizPath = '/' + (current2Path(view, params).split('/')[1] || '');
+  const mostraData = TELAS_COM_DATA.has(raizPath) && !view.compact;
+  const bar = qs('#dateBar');
+  if (bar) { bar.hidden = !mostraData; if (mostraData) atualizarBarraData(); }
+
   const compact = !!view.compact;
   qs('#app').classList.toggle('compact', compact);
   qs('#navLarge').hidden = compact;
@@ -100,8 +126,12 @@ function setNavbar(view, params) {
 }
 
 /* Render */
+let _rotaAtual = '/';
+function current2Path() { return _rotaAtual; }
+
 async function render() {
   const match = parse();
+  _rotaAtual = match ? match.path : '/';
   const app = qs('#app');
 
   /* CORREÇÃO (v1.4.2): antes uma rota desconhecida redirecionava para a tela
@@ -192,5 +222,16 @@ export function refresh() { return render(); }
 export function startRouter() {
   window.addEventListener('hashchange', () => { navDepth++; render(); });
   qs('#navBack').addEventListener('click', back);
+
+  /* Seletor global de data: navegação e re-render de toda a tela ativa. */
+  qs('#datePrev')?.addEventListener('click', () => { datas.voltarDia(); });
+  qs('#dateNext')?.addEventListener('click', () => { if (!datas.ehHoje(datas.dataAtiva())) datas.avancarDia(); });
+  const picker = qs('#datePicker');
+  qs('#dateLabel')?.addEventListener('click', () => { picker?.showPicker ? picker.showPicker() : picker?.click(); });
+  picker?.addEventListener('change', () => { if (picker.value) datas.definirDataAtiva(picker.value); });
+
+  // ao mudar a data, atualiza a barra e redesenha a tela para refletir o novo dia
+  datas.aoMudarData(() => { atualizarBarraData(); render(); });
+
   render();
 }

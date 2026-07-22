@@ -19,10 +19,10 @@ export default {
     });
     const due = await notif.dueReminders();
     // resumo alimentar do dia para o registro rápido
-    const refeicoes = (await store.getDaily('meals', store.todayISO()))?.value || {};
+    const refeicoes = (await store.getDaily('meals', store.dataDeTrabalho()))?.value || {};
     const itensHoje = ['breakfast','snack1','lunch','snack2','dinner','supper']
       .flatMap(k => refeicoes[k]?.itens || []);
-    const kcalHoje = foods.somar(itensHoje).kcal;
+    const totalDia = foods.somar(itensHoje);
     const metaKcal = store.getSettings().calorieGoal;
 
     return `
@@ -67,6 +67,27 @@ export default {
           <div class="stat-label">Maior sequência</div></div>
       </div>
 
+      <div class="section-header"><span class="section-title">Alimentação de hoje</span></div>
+      <a class="card" href="#/alimentacao" style="display:block;text-decoration:none;color:inherit">
+        <div class="spread" style="margin-bottom:10px">
+          <div><div class="card-title" style="font-size:15px">${icon('meal', 18)} Diário alimentar</div>
+            <div class="card-sub">${itensHoje.length
+              ? `${itensHoje.length} ${itensHoje.length === 1 ? 'item' : 'itens'} registrados`
+              : 'Nada registrado ainda'}</div></div>
+          <span class="chip ${totalDia.kcal > metaKcal ? 'red' : totalDia.kcal >= metaKcal * 0.7 ? 'green' : 'accent'}">
+            ${totalDia.kcal} / ${metaKcal} kcal</span>
+        </div>
+        <div class="bar" style="margin-bottom:12px">
+          <div class="bar-fill" style="width:${Math.min(Math.round(totalDia.kcal / metaKcal * 100), 100)}%"></div>
+        </div>
+        <div class="macro-grid">
+          <div class="macro"><div class="macro-v">${totalDia.p}<small>g</small></div><div class="macro-l">Proteína</div></div>
+          <div class="macro"><div class="macro-v">${totalDia.c}<small>g</small></div><div class="macro-l">Carbo</div></div>
+          <div class="macro"><div class="macro-v">${totalDia.g}<small>g</small></div><div class="macro-l">Gordura</div></div>
+          <div class="macro"><div class="macro-v">${totalDia.f}<small>g</small></div><div class="macro-l">Fibra</div></div>
+        </div>
+      </a>
+
       <div class="section-header"><span class="section-title">Registro rápido</span></div>
       <div class="list">
         <a class="row" href="#/agua">
@@ -83,13 +104,6 @@ export default {
           <div class="row-icon" style="background:rgba(255,69,58,.18);color:#FF453A">${icon('knee', 18)}</div>
           <div class="row-body"><div class="row-title">Dor no joelho</div>
             <div class="row-sub">${t.knee != null ? t.knee + '/10 hoje' : 'Não registrado hoje'}</div></div>
-          <span class="row-chevron">${icon('chevron', 15)}</span></a>
-        <a class="row" href="#/alimentacao">
-          <div class="row-icon" style="background:rgba(255,214,10,.18);color:#FFD60A">${icon('meal', 18)}</div>
-          <div class="row-body"><div class="row-title">Alimentação</div>
-            <div class="row-sub">${itensHoje.length
-              ? `${kcalHoje} de ${metaKcal} kcal · ${itensHoje.length} ${itensHoje.length === 1 ? 'item' : 'itens'} hoje`
-              : 'Nada registrado hoje'}</div></div>
           <span class="row-chevron">${icon('chevron', 15)}</span></a>
         <a class="row" href="#/fotos">
           <div class="row-icon" style="background:rgba(191,90,242,.18);color:#BF5AF2">${icon('grid', 18)}</div>

@@ -66,23 +66,28 @@ export async function buscar(termo, { categoria = '', limite = 40 } = {}) {
   const q = semAcento(termo).trim();
   const qCat = semAcento(categoria);
 
+  const textoBusca = f =>
+    semAcento([f.nome, f.marca || '', (f.sin || []).join(' '), f.cat].join(' '));
+
   const filtrados = todos.filter(f => {
     if (categoria && semAcento(f.cat) !== qCat) return false;
     if (!q) return true;
-    return semAcento(f.nome).includes(q) || semAcento(f.cat).includes(q);
+    return textoBusca(f).includes(q);
   });
 
   return filtrados
     .map(f => {
       const nome = semAcento(f.nome);
-      const pos = q ? nome.indexOf(q) : 0;
-      return {
-        f,
-        favorito: favs.has(f.id),
-        recente: ordemRecente.has(f.id),
-        // começa com o termo pesa mais que conter no meio
-        peso: pos === 0 ? 0 : pos < 0 ? 99 : 1
-      };
+      const posNome = q ? nome.indexOf(q) : 0;
+      const casaSinonimo = q && (f.sin || []).some(x => semAcento(x).includes(q));
+      const casaMarca = q && semAcento(f.marca || '').includes(q);
+      // nome começando com o termo é o mais relevante; depois nome no meio;
+      // depois marca; depois sinônimo; depois categoria
+      const peso = posNome === 0 ? 0
+                 : posNome > 0 ? 1
+                 : casaMarca ? 2
+                 : casaSinonimo ? 3 : 4;
+      return { f, favorito: favs.has(f.id), recente: ordemRecente.has(f.id), peso };
     })
     .sort((a, b) =>
       // favoritos primeiro, depois recentes, depois relevância, depois alfabético
@@ -222,6 +227,40 @@ export async function recentesCompletos(limite = 8) {
   const todos = await listarTodos();
   const mapa = new Map(todos.map(f => [f.id, f]));
   return recentes.map(r => mapa.get(r.id)).filter(Boolean).slice(0, limite);
+}
+
+/* ---------------------------------------------- refeições favoritas
+ * Combinações completas ("Meu café da manhã") que a usuária adiciona com um
+ * toque. Ficam em localStorage sob o prefixo pr.user., então entram no backup.
+ * -------------------------------------------------------------------------- */
+const K_COMBOS = () => `${LS_PREFIX}foods.combos.${P()}`;
+
+export async function listarRefeicoesFavoritas() {
+  try { return JSON.parse(localStorage.getItem(K_COMBOS()) || '[]'); } catch { return []; }
+}
+
+/** Salva uma refeição favorita a partir de uma lista de itens já calculados. */
+export async function salvarRefeicaoFavorita(nome, itens) {
+  const limpo = String(nome || '').trim().slice(0, 60);
+  if (!limpo) throw new Error('Dê um nome à refeição.');
+  if (!Array.isArray(itens) || !itens.length) throw new Error('A refeição está vazia.');
+  const atuais = await listarRefeicoesFavoritas();
+  const combo = {
+    id: 'c' + Date.now().toString(36),
+    nome: limpo,
+    itens: itens.map(i => ({
+      nome: i.nome, foodId: i.foodId, qtd: i.qtd, medidaTexto: i.medidaTexto,
+      gramas: i.gramas, kcal: i.kcal, p: i.p, c: i.c, g: i.g, f: i.f, sod: i.sod, ac: i.ac
+    })),
+    criadoEm: new Date().toISOString()
+  };
+  safeSet(K_COMBOS(), JSON.stringify([combo, ...atuais].slice(0, 50)));
+  return combo;
+}
+
+export async function removerRefeicaoFavorita(id) {
+  const atuais = await listarRefeicoesFavoritas();
+  safeSet(K_COMBOS(), JSON.stringify(atuais.filter(c => c.id !== id)));
 }
 
 /* ------------------------------------------------------ cálculo de porção */

@@ -11,7 +11,7 @@ const advice = v =>
 export default {
   title: 'Dor no Joelho', subtitle: 'Pata de ganso · escala 0 a 10',
   async render() {
-    const date = store.todayISO();
+    const date = store.dataDeTrabalho();
     const rec = await store.getDaily('knee', date);
     const cur = rec?.value?.level;
     const rows = await store.listDaily('knee');
@@ -48,7 +48,7 @@ export default {
           </div></div>`).join('')}</div>` : ''}`;
   },
   mount(root, params, ctx = {}) {
-    const date = store.todayISO();
+    const date = store.dataDeTrabalho();
     qsa('[data-p]', root).forEach(b => b.addEventListener('click', async () => {
       qsa('[data-p]', root).forEach(x => { x.classList.remove('active'); x.style.background = ''; x.style.color = ''; });
       b.classList.add('active');

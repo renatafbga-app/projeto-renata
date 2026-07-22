@@ -104,4 +104,25 @@ export const Profiles = {
   switchTo: id => store.setActiveProfile(id)
 };
 
-export const ADAPTERS = { AppleHealth, AppleWatch, CloudSync, AI, Profiles };
+/* -------------------------------------------------------- Google Fit / Health Connect */
+export const GoogleFit = {
+  id: 'google-fit',
+  isAvailable: () => false,                 // web não expõe; exige app nativo/Health Connect
+  async connect() { throw new Error('Requer app nativo (Health Connect).'); },
+  async pull() { return []; },
+  /** Formato-alvo: [{type:'weight'|'steps', date, value}] */
+  async push() { return { skipped: true }; }
+};
+
+/* -------------------------------------------------- Balanças e relógios inteligentes */
+export const Wearables = {
+  id: 'wearables',
+  /* Bluetooth Web existe, mas cada balança usa um protocolo. Quando houver, o
+     adaptador recebe leituras e grava em daily/weight — a mesma fonte única. */
+  isAvailable: () => typeof navigator !== 'undefined' && !!navigator.bluetooth,
+  async connect() { throw new Error('Emparelhamento específico por fabricante — não implementado.'); },
+  /** Entrada esperada: {tipo:'peso'|'fc', valor, data} → daily/weight */
+  async ingest() { return { skipped: true }; }
+};
+
+export const ADAPTERS = { AppleHealth, GoogleFit, AppleWatch, Wearables, CloudSync, AI, Profiles };

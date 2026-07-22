@@ -7,7 +7,7 @@ const MOODS = [['😀','Ótima'],['🙂','Bem'],['😐','Neutra'],['😞','Pra b
 export default {
   title: 'Humor', subtitle: 'Como você está hoje',
   async render() {
-    const date = store.todayISO();
+    const date = store.dataDeTrabalho();
     const v = (await store.getDaily('mood', date))?.value || {};
     const rec = await store.getDaily('mood', date);
     const label = MOODS.find(m => m[0] === v.emoji)?.[1];
@@ -31,7 +31,7 @@ export default {
             <div class="row-sub">${fmtDate(r.date, 'long')}${r.note ? ' · ' + esc(r.note) : ''}</div></div></div>`).join('')}</div>` : ''}`;
   },
   mount(root, params, ctx = {}) {
-    const date = store.todayISO();
+    const date = store.dataDeTrabalho();
     qsa('[data-m]', root).forEach(b => b.addEventListener('click', async () => {
       qsa('[data-m]', root).forEach(x => x.classList.remove('active'));
       b.classList.add('active'); haptic();

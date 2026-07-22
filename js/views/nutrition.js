@@ -22,7 +22,7 @@ export default {
   title: 'Alimentação',
   subtitle: 'Diário nutricional',
   async render() {
-    const hoje = store.todayISO();
+    const hoje = store.dataDeTrabalho();
     const rec = await store.getDaily('meals', hoje);
     const valor = rec?.value || {};
     const totalAlimentos = (await foods.listarTodos()).length;
@@ -114,9 +114,13 @@ export default {
                 </div>`).join('')}
             </div>` : ''}
 
-          <button class="btn sm block mt-2" data-add-alimento="${r.key}">
-            ${icon('plus', 16)} Adicionar alimento
-          </button>
+          <div class="hstack mt-2">
+            <button class="btn sm grow" data-add-alimento="${r.key}">
+              ${icon('plus', 16)} Adicionar alimento
+            </button>
+            ${itens.length ? `<button class="btn sm ghost" data-salvar-combo="${r.key}"
+              aria-label="Salvar como refeição favorita">${icon('heart', 16)}</button>` : ''}
+          </div>
 
           <textarea class="textarea" style="min-height:44px;margin-top:10px"
                     placeholder="Observações desta refeição…"
@@ -147,7 +151,7 @@ export default {
   mount(root, params, ctx = {}) {
     const sig = { signal: ctx.signal };
     const dataEl = qs('#nData', root);
-    const dataAtual = () => dataEl.value || store.todayISO();
+    const dataAtual = () => dataEl.value || store.dataDeTrabalho();
 
     dataEl.addEventListener('change', refresh, sig);
 
@@ -180,11 +184,27 @@ export default {
     qsa('[data-add-alimento]', root).forEach(b =>
       b.addEventListener('click', () => abrirBusca(b.dataset.addAlimento), sig));
 
+    /* salvar refeição atual como favorita */
+    qsa('[data-salvar-combo]', root).forEach(b => b.addEventListener('click', async () => {
+      const key = b.dataset.salvarCombo;
+      const rec = await store.getDaily('meals', dataAtual());
+      const itens = rec?.value?.[key]?.itens || [];
+      if (!itens.length) return toast('Esta refeição está vazia.');
+      const sugestao = REFEICOES.find(r => r.key === key)?.nome || 'Minha refeição';
+      const nome = prompt('Nome da refeição favorita:', `Meu ${sugestao.toLowerCase()}`);
+      if (nome === null) return;
+      try {
+        await foods.salvarRefeicaoFavorita(nome, itens);
+        toast('Refeição favorita salva', 'ok');
+      } catch (err) { toast(err.message); }
+    }, sig));
+
     async function abrirBusca(refeicao) {
       const nome = REFEICOES.find(r => r.key === refeicao)?.nome || '';
       const recentes = await foods.recentesCompletos(8);
       const favoritos = await foods.listarFavoritos();
       const categorias = await foods.contarPorCategoria();
+      const combos = await foods.listarRefeicoesFavoritas();
 
       sheet({
         title: `Adicionar em ${nome}`,
@@ -225,7 +245,25 @@ export default {
                       style="color:${f.favorito ? 'var(--accent)' : 'var(--label-4)'};font-size:19px">★</button>
             </div>`;
 
+          const ligarCombos = raiz => {
+            qsa('[data-combo]', raiz).forEach(el => el.addEventListener('click', async () => {
+              const c = combos.find(x => x.id === el.dataset.combo);
+              if (!c) return;
+              for (const item of c.itens) { await adicionarItem(refeicao, { ...item }); if (item.foodId) await foods.registrarUso(item.foodId); }
+              fechar();
+              toast(`${c.nome} adicionada`, 'ok');
+            }));
+            qsa('[data-combo-del]', raiz).forEach(el => el.addEventListener('click', async e => {
+              e.stopPropagation();
+              await foods.removerRefeicaoFavorita(el.dataset.comboDel);
+              haptic();
+              const i = combos.findIndex(x => x.id === el.dataset.comboDel);
+              if (i >= 0) combos.splice(i, 1);
+              desenhar();
+            }));
+          };
           const ligarLinhas = raiz => {
+            ligarCombos(raiz);
             qsa('[data-food]', raiz).forEach(el => el.addEventListener('click', async () => {
               const f = await foods.acharAlimento(el.dataset.food);
               if (f) escolherQuantidade(f);
@@ -249,6 +287,16 @@ export default {
                 if (f) favs.push({ ...f, favorito: true });
               }
               area.innerHTML = `
+                ${combos.length ? `
+                  <div class="section-header"><span class="section-title">Refeições favoritas</span></div>
+                  <div class="list">${combos.map(c => `
+                    <div class="row">
+                      <button class="row-body" data-combo="${esc(c.id)}" style="text-align:left;background:none;padding:0">
+                        <div class="row-title">${icon('heart', 14)} ${esc(c.nome)}</div>
+                        <div class="row-sub">${c.itens.length} ${c.itens.length === 1 ? 'item' : 'itens'} · ${foods.somar(c.itens).kcal} kcal</div>
+                      </button>
+                      <button class="row-chevron" data-combo-del="${esc(c.id)}" aria-label="Remover refeição favorita">${icon('trash', 15)}</button>
+                    </div>`).join('')}</div>` : ''}
                 ${recentes.length ? `
                   <div class="section-header"><span class="section-title">Consumidos recentemente</span></div>
                   <div class="list">${recentes.map(f =>

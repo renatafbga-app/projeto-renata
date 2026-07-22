@@ -9,6 +9,7 @@
  * ========================================================================== */
 import * as db from './db.js';
 import { LS_PREFIX, DEFAULT_SETTINGS, DAILY_KINDS, PHOTO_SLOTS } from './schema.js';
+import { hojeISO, dataAtiva } from './dates.js';
 
 /* -------------------------------------------------- perfis (multi-perfil) */
 const K_PROFILES = LS_PREFIX + 'profiles';
@@ -42,6 +43,14 @@ export const off = (type, fn) => bus.removeEventListener(type, fn);
 const emit = (type, detail) => bus.dispatchEvent(new CustomEvent(type, { detail }));
 
 /* -------------------------------------------------- utilidades */
+/* Data local — nunca UTC. Ver js/core/dates.js para a correção do bug da
+   virada do dia às 21h. Mantido o nome todayISO por compatibilidade. */
+export const todayISO = hojeISO;
+
+/* Data em que os módulos de registro diário operam. É a data ativa do seletor
+   global (js/core/dates.js). Quando o usuário navega para outro dia, todas as
+   telas passam a ler e gravar nessa data — nunca mais "sempre hoje". */
+export const dataDeTrabalho = dataAtiva;
 /**
  * Escrita protegida no localStorage.
  * Safari em Navegação Privada e cotas cheias fazem setItem LANÇAR. Sem esta
@@ -67,7 +76,6 @@ function readJSON(key, fallback) {
   }
 }
 
-export const todayISO = () => new Date().toISOString().slice(0, 10);
 const now = () => new Date().toISOString();
 
 /* ==========================================================================

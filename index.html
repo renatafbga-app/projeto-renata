@@ -51,6 +51,16 @@
     <div id="navCompactTitle" class="navbar-compact-title"></div>
     <div id="navActions" class="navbar-actions"></div>
   </div>
+  <div id="dateBar" class="date-bar" hidden>
+    <button id="datePrev" class="date-nav" type="button" aria-label="Dia anterior">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button id="dateLabel" class="date-label" type="button" aria-label="Escolher data"></button>
+    <button id="dateNext" class="date-nav" type="button" aria-label="Próximo dia">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <input id="datePicker" type="date" class="date-picker" aria-hidden="true" tabindex="-1">
+  </div>
   <div id="navLarge" class="navbar-large">
     <h1 id="navTitle">Início</h1>
     <p id="navSubtitle" class="navbar-subtitle"></p>

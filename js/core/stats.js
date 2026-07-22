@@ -64,7 +64,7 @@ export async function overview() {
 
 /** Resumo do dia de hoje para a tela Início. */
 export async function today() {
-  const date = store.todayISO();
+  const date = store.dataDeTrabalho();
   const water = (await store.getDaily('water', date))?.value?.ml || 0;
   const mood  = (await store.getDaily('mood',  date))?.value || null;
   const knee  = (await store.getDaily('knee',  date))?.value?.level ?? null;

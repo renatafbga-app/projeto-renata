@@ -11,7 +11,7 @@ export default {
   subtitle: 'Meta diária de hidratação',
   async render() {
     const goal = store.getSettings().waterGoal;
-    const hoje = store.todayISO();
+    const hoje = store.dataDeTrabalho();
     const rec = await store.getDaily('water', hoje);
     const ml = rec?.value?.ml || 0;
     const registros = rec?.value?.log || [];
@@ -84,7 +84,7 @@ export default {
   mount(root, params, ctx = {}) {
     const sig = { signal: ctx.signal };
     const goal = store.getSettings().waterGoal;
-    const hoje = store.todayISO();
+    const hoje = store.dataDeTrabalho();
 
     async function adicionar(delta) {
       try {

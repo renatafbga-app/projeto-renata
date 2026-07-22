@@ -183,3 +183,29 @@ body { -webkit-user-select: none; user-select: none; }
     transition-duration: .01ms !important;
   }
 }
+
+/* ---------------- SELETOR GLOBAL DE DATA ---------------- */
+.date-bar {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 0 var(--gutter) var(--sp-2);
+}
+.date-nav {
+  width: 34px; height: 34px; border-radius: var(--r-full);
+  background: var(--fill); color: var(--label);
+  display: grid; place-items: center; flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
+}
+.date-nav:active { transform: scale(.9); background: var(--accent-soft); }
+.date-label {
+  flex: 1; text-align: center;
+  font-family: var(--font); font-size: var(--fs-callout); font-weight: 600;
+  color: var(--label); padding: 8px;
+  border-radius: var(--r-md); background: var(--fill-soft);
+  position: relative;
+}
+.date-label.hoje { color: var(--accent); }
+.date-picker {
+  position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%;
+  border: 0; pointer-events: none;
+}
+/* Telas que não são de registro diário escondem a barra (regra em views.css). */

@@ -7,8 +7,9 @@ import { route, startRouter, renderTabs } from './router.js';
 import { qs, toast } from './ui.js';
 import * as store from './core/store.js';
 import * as notif from './core/notifications.js';
+import { sincronizarAoAbrir } from './core/dates.js';
 
-export const APP_VERSION = '1.5.0';
+export const APP_VERSION = '1.6.0';
 
 /* ---------------------------------------------------------------- tema */
 export function applyTheme(t) {
@@ -66,6 +67,7 @@ function showInternalReminders(list) {
 (async function boot() {
   try {
     await store.init();
+    sincronizarAoAbrir();          // corrige a data ativa se o dia mudou desde a última abertura
     applyTheme(store.getSettings().theme || 'dark');
   } catch (err) {
     console.error('Falha ao abrir o banco de dados:', err);

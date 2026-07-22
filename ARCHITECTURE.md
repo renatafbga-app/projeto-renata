@@ -277,6 +277,42 @@ Agora `savePhotoSession` extrai o peso do patch e grava em `daily/weight`;
 
 ---
 
+## 5h. Datas locais e navegação entre dias (v1.6.0)
+
+**Bug corrigido:** o app "virava o dia" às 21h. A causa era
+`new Date().toISOString().slice(0,10)`, que converte para **UTC** antes de
+cortar. No Brasil (UTC−3), das 21h à meia-noite o UTC já está no dia seguinte.
+
+`js/core/dates.js` é a fonte única de datas. Tudo é calculado no horário local:
+o dia só muda à meia-noite local. Um teste simula 21h30 em Brasília e prova que
+o dia permanece correto.
+
+**Data ativa.** O mesmo módulo mantém a data de trabalho do app, observável.
+`store.dataDeTrabalho()` a expõe às views; o seletor global (◀ Hoje ▶ na navbar)
+a altera; ao mudar, o router redesenha a tela ativa e todos os módulos de
+registro diário passam a ler e gravar naquela data. Não existe mais "sempre
+hoje" — você registra a água esquecida de ontem normalmente.
+
+Os campos de data internos das telas foram removidos: a data vem de um lugar só.
+
+---
+
+## 5i. Base alimentar em duas camadas, ampliada (v1.6.0)
+
+383 alimentos, 11 categorias, com sódio e açúcar. 21 com marca (Ninho, Nescau,
+Piracanjuba, Danone, Sadia…) e 35 com sinônimos regionais. A busca casa nome,
+marca, sinônimo e categoria: "aipim" e "macaxeira" encontram mandioca.
+
+Refeições favoritas ("Meu café da manhã") são combinações salvas em
+`localStorage` sob `pr.user.`, adicionadas com um toque, e entram no backup.
+
+Vale repetir a decisão da v1.5.0: **não inventamos valores nutricionais.** Os
+383 itens têm referência de tabelas oficiais e rótulos. A base cresce por
+importação com procedência ou cadastro próprio, nunca por preenchimento
+artificial.
+
+---
+
 ## 6. Autosave
 
 Não há botão "Salvar" em lugar nenhum — é o padrão do iOS.
@@ -361,7 +397,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-144 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+162 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

@@ -117,7 +117,7 @@ export default {
     const sig = { signal: ctx.signal };
 
     qs('#novoRegistro', root)?.addEventListener('click',
-      () => abrirRegistro(store.todayISO()), sig);
+      () => abrirRegistro(store.dataDeTrabalho()), sig);
 
     qsa('[data-abrir]', root).forEach(el =>
       el.addEventListener('click', () => abrirRegistro(el.dataset.abrir), sig));
@@ -204,7 +204,7 @@ export default {
           qs('#pfNota', layer).addEventListener('change', salvarCampos);
 
           dataEl.addEventListener('change', async () => {
-            dataAtual = dataEl.value || store.todayISO();
+            dataAtual = dataEl.value || store.dataDeTrabalho();
             const kg = await store.pesoDoDia(dataAtual);
             const campoPeso = qs('#pfPeso', layer);
             const aviso = qs('#pfPesoOrigem', layer);

@@ -1,5 +1,5 @@
 import { qs, qsa, haptic, esc } from '../ui.js';
-import { refresh } from '../router.js';
+import {  } from '../router.js';
 import * as store from '../core/store.js';
 import { bindAutosave, flashSaved } from '../core/autosave.js';
 
@@ -14,13 +14,11 @@ const hours = (a, b) => {
 export default {
   title: 'Sono', subtitle: 'Onde o músculo se constrói',
   async render() {
-    const date = store.todayISO();
+    const date = store.dataDeTrabalho();
     const v = (await store.getDaily('sleep', date))?.value || {};
     const h = hours(v.bed, v.wake);
     return `
       <div class="card">
-        <div class="field"><label class="field-label">Data</label>
-          <input class="input" type="date" id="sDate" value="${date}"></div>
         <div class="input-row" style="margin-bottom:12px">
           <div class="grow"><label class="field-label">Dormi às</label>
             <input class="input" type="time" value="${esc(v.bed || '23:00')}" data-save="bed"></div>
@@ -39,8 +37,7 @@ export default {
         horários parecidos todos os dias.</div>`;
   },
   mount(root, params, ctx = {}) {
-    const dateEl = qs('#sDate', root);
-    const date = () => dateEl.value || store.todayISO();
+    const date = () => store.dataDeTrabalho();
     bindAutosave(root, async (field, value) => {
       await store.patchDaily('sleep', date(), { [field]: value }, ctx);
       const rec = await store.getDaily('sleep', date());
@@ -53,6 +50,5 @@ export default {
       await store.patchDaily('sleep', date(), { quality: +b.dataset.q });
       flashSaved();
     }));
-    dateEl.addEventListener('change', () => refresh());
   }
 };
