@@ -58,6 +58,7 @@ export async function overview() {
     lost: +(startW - curW).toFixed(1),
     toGoal: +(curW - settings.goalWeight).toFixed(1),
     currentDay: store.currentDay(),
+    currentWeek: (PROGRAM.find(d => d.day === store.currentDay()) || {}).week || 1,
     imc: settings.heightCm ? +(curW / Math.pow(settings.heightCm / 100, 2)).toFixed(1) : null
   };
 }

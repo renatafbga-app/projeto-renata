@@ -313,7 +313,26 @@ artificial.
 
 ---
 
-## 6. Autosave
+## 5j. Home como painel de atalhos (v1.6.1)
+
+Regressão corrigida: na v1.6.0, ao adicionar o card "Alimentação de hoje", eu
+removi por engano o atalho de Alimentação do Registro Rápido. O card era para
+**complementar**, não substituir.
+
+Agora a Home tem os dois, e todo indicador é também um atalho:
+
+- **Anéis** (Programa, Dias, Água) são links: `<a class="ring-item">`, com o
+  mesmo feedback de toque dos botões (`views.css`).
+- **Estatísticas** do Resumo levam ao módulo relacionado (Peso eliminado → Peso,
+  os demais → Progresso), com um chevron discreto.
+- **Dias** mostra `X/90` (dia atual do desafio), não mais "0 dias".
+- **Programa** mantém o percentual e ganha "Semana N" abaixo.
+
+Um teste verifica a **ordem exata** do Registro Rápido contra a renderização
+real; outro confirma que todo link de indicador aponta para uma rota registrada.
+A regressão de sumiço do atalho é travada por teste — provei que ele falha se o
+atalho for removido.
+
 
 Não há botão "Salvar" em lugar nenhum — é o padrão do iOS.
 
@@ -397,7 +416,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-162 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+169 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

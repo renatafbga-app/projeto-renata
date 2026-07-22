@@ -9,7 +9,7 @@ import * as store from './core/store.js';
 import * as notif from './core/notifications.js';
 import { sincronizarAoAbrir } from './core/dates.js';
 
-export const APP_VERSION = '1.6.0';
+export const APP_VERSION = '1.6.1';
 
 /* ---------------------------------------------------------------- tema */
 export function applyTheme(t) {

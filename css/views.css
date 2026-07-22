@@ -369,3 +369,29 @@
   font-weight: 600; color: var(--accent); text-align: center;
 }
 .stepper .input.value { text-align: center; font-weight: 700; font-size: var(--fs-title); }
+
+/* ---------------- HOME: indicadores clicáveis (v1.6.1) ---------------- */
+/* Anéis e estatísticas viram atalhos com o mesmo feedback de toque dos botões. */
+a.ring-item, a.stat, a.card {
+  text-decoration: none; color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+a.ring-item, a.stat {
+  display: block;
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
+}
+a.ring-item:active, a.stat:active, a.card.tocavel:active {
+  transform: scale(.97);
+}
+a.stat:active { background: var(--fill-soft); }
+.rings a.ring-item { flex: 1; }
+/* pequeno chevron indicando que o indicador leva a algum lugar */
+.stat.tocavel { position: relative; }
+.stat.tocavel::after {
+  content: ""; position: absolute; top: 12px; right: 12px;
+  width: 14px; height: 14px; opacity: .28;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 5l7 7-7 7' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat;
+}
+.ring-sub { font-size: 10px; color: var(--label-3); margin-top: 4px; text-align: center; font-weight: 600; }
