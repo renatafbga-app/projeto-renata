@@ -82,11 +82,19 @@ body { -webkit-user-select: none; user-select: none; }
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 60;
   padding-top: var(--safe-top);
-  background: var(--bg-blur);
+  /* Fundo SÓLIDO por baixo do blur: garante que nenhum conteúdo (hero coral,
+     cores da dor no joelho) apareça por trás do cabeçalho, mesmo quando o
+     backdrop-filter não é aplicado pelo Safari em modo PWA. */
+  background: var(--bg);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
   border-bottom: .5px solid transparent;
   transition: border-color var(--dur-fast) linear;
+}
+/* Onde o blur existe, deixamos o fundo levemente translúcido para o efeito
+   fosco — mas nunca a ponto de o conteúdo "vazar" e ler como gradiente. */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .navbar { background: var(--bg-blur); }
 }
 .navbar.scrolled { border-bottom-color: var(--separator); }
 
@@ -135,16 +143,19 @@ body { -webkit-user-select: none; user-select: none; }
 .navbar-subtitle:empty { display: none; }
 
 /* ---------------- ÁREA DE CONTEÚDO ---------------- */
+/* O topo do conteúdo é a ALTURA REAL da navbar (medida em JS após cada render,
+   em --nav-h). Isso cobre título grande, modo compacto e a barra de data — que
+   antes não eram considerados pelo padding fixo, deixando conteúdo escondido
+   atrás do cabeçalho. Fallback para o cálculo antigo se o JS não rodar. */
 .app {
   min-height: 100%;
-  padding: calc(var(--safe-top) + var(--navbar-h) + 62px)
+  padding: var(--nav-h, calc(var(--safe-top) + var(--navbar-h) + 62px))
            var(--gutter)
            calc(var(--tabbar-h) + var(--safe-bottom) + var(--sp-7));
   padding-left: max(var(--gutter), var(--safe-left));
   padding-right: max(var(--gutter), var(--safe-right));
+  transition: padding-top var(--dur-fast) var(--ease-out);
 }
-/* Telas internas (com botão voltar) não têm título grande */
-.app.compact { padding-top: calc(var(--safe-top) + var(--navbar-h) + var(--sp-3)); }
 
 /* Transição entre telas */
 .view { animation: viewIn var(--dur-med) var(--ease-out) both; }

@@ -77,3 +77,31 @@ export async function today() {
     day: PROGRAM.find(d => d.day === store.currentDay()) || PROGRAM[0]
   };
 }
+
+/**
+ * Progresso INDEPENDENTE de cada frente do programa. Nenhum depende do outro.
+ *  - Treino: dias de treino concluídos sobre 90.
+ *  - Alimentação: dias distintos com refeição registrada sobre 90.
+ *  - Água: registro do dia atual (meta atingida ou ml/meta).
+ */
+export async function progressoPorModulo() {
+  const treinoDias = store.getProgress().completedDays.length;
+
+  const meals = await store.listDaily('meals');
+  const alimentacaoDias = meals.filter(m => {
+    const v = m.value || {};
+    return ['breakfast','snack1','lunch','snack2','dinner','supper']
+      .some(k => (v[k]?.itens || []).length > 0);
+  }).length;
+
+  const s = store.getSettings();
+  const hoje = store.todayISO();
+  const aguaHoje = (await store.getDaily('water', hoje))?.value?.ml || 0;
+
+  return {
+    treino:      { dia: treinoDias,      total: 90, tipo: 'desafio' },
+    alimentacao: { dia: alimentacaoDias, total: 90, tipo: 'desafio' },
+    agua:        { ml: aguaHoje, meta: s.waterGoal,
+                   pct: Math.min(Math.round(aguaHoje / s.waterGoal * 100), 100), tipo: 'diario' }
+  };
+}

@@ -1,3 +1,4 @@
+import { icon } from '../icons.js';
 import { lineChart, empty } from '../ui.js';
 import * as store from '../core/store.js';
 import * as stats from '../core/stats.js';
@@ -9,6 +10,7 @@ export default {
     const weights = await store.series('weight', v => v?.kg);
     const knee = await store.series('knee', v => v?.level);
     const done = new Set(store.getProgress().completedDays);
+    const pm = await stats.progressoPorModulo();
     const cur = store.currentDay();
 
     const S = [
@@ -34,6 +36,31 @@ export default {
         </div>
         <div class="bar lg" style="margin-top:14px;background:rgba(255,255,255,.25)">
           <div class="bar-fill" style="width:${o.percent}%;background:#fff"></div></div>
+      </div>
+
+      <div class="section-header"><span class="section-title">Progresso por frente</span></div>
+      <div class="list">
+        <a class="row" href="#/treinos">
+          <div class="row-icon tint">${icon('dumbbell', 18)}</div>
+          <div class="row-body"><div class="row-title">Treino</div>
+            <div class="row-sub">Dia ${pm.treino.dia}/${pm.treino.total} do desafio</div>
+            <div class="bar" style="margin-top:6px;height:5px"><div class="bar-fill" style="width:${Math.round(pm.treino.dia/pm.treino.total*100)}%"></div></div>
+          </div>
+          <span class="row-chevron">${icon('chevron', 15)}</span></a>
+        <a class="row" href="#/alimentacao">
+          <div class="row-icon" style="background:rgba(255,214,10,.18);color:#FFD60A">${icon('meal', 18)}</div>
+          <div class="row-body"><div class="row-title">Alimentação</div>
+            <div class="row-sub">Dia ${pm.alimentacao.dia}/${pm.alimentacao.total} com registro</div>
+            <div class="bar" style="margin-top:6px;height:5px"><div class="bar-fill" style="width:${Math.round(pm.alimentacao.dia/pm.alimentacao.total*100)}%"></div></div>
+          </div>
+          <span class="row-chevron">${icon('chevron', 15)}</span></a>
+        <a class="row" href="#/agua">
+          <div class="row-icon" style="background:rgba(10,132,255,.18);color:#4FC3F7">${icon('drop', 18)}</div>
+          <div class="row-body"><div class="row-title">Água</div>
+            <div class="row-sub">Hoje: ${pm.agua.ml} de ${pm.agua.meta} ml · registro diário</div>
+            <div class="bar teal" style="margin-top:6px;height:5px"><div class="bar-fill" style="width:${pm.agua.pct}%"></div></div>
+          </div>
+          <span class="row-chevron">${icon('chevron', 15)}</span></a>
       </div>
 
       <div class="section-header"><span class="section-title">Evolução do peso</span></div>

@@ -35,6 +35,7 @@ export default {
       knee: t.knee, streak: o.streak, waterPct: t.waterPct, lost: o.lost
     });
     const due = await notif.dueReminders();
+    const aval = await store.ultimaAvaliacao();
 
     // resumo alimentar da data selecionada
     const refeicoes = (await store.getDaily('meals', store.dataDeTrabalho()))?.value || {};
@@ -47,7 +48,19 @@ export default {
     // dia atual do desafio no formato X/90
     const diaAtual = o.currentDay;
 
+    const avisoAval = (aval && aval.dias >= 15) ? `
+      <a class="card tocavel" href="#/medidas" style="display:block;text-decoration:none;color:inherit;border-left:3px solid var(--accent)">
+        <div class="card-title" style="font-size:15px">${icon('ruler', 18)} Avaliação corporal</div>
+        <div class="card-sub" style="margin-bottom:10px">Faz ${aval.dias} dias desde sua última avaliação.</div>
+        <div class="hstack" style="gap:16px;flex-wrap:wrap">
+          <span class="tiny ${aval.pendencias.peso ? '' : 'muted'}">${aval.pendencias.peso ? '☐' : '☑'} Peso</span>
+          <span class="tiny ${aval.pendencias.medidas ? '' : 'muted'}">${aval.pendencias.medidas ? '☐' : '☑'} Medidas</span>
+          <span class="tiny ${aval.pendencias.fotos ? '' : 'muted'}">${aval.pendencias.fotos ? '☐' : '☑'} Fotos</span>
+        </div>
+      </a>` : '';
+
     return `
+      ${avisoAval}
       ${due.length ? `
         <div class="reminder">
           ${icon('bell', 20)}

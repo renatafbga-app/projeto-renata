@@ -198,24 +198,37 @@
 /* ---------------- HUMOR ---------------- */
 .mood-row { display: flex; justify-content: space-between; gap: var(--sp-2); }
 .mood-btn {
-  flex: 1; aspect-ratio: 1/1; border-radius: var(--r-md);
+  flex: 1; min-height: 52px; aspect-ratio: 1/1; border-radius: var(--r-md);
   background: var(--bg-elev-2); font-size: 28px;
   display: grid; place-items: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
 }
 .mood-btn:active { transform: scale(.9); }
 .mood-btn.active { background: var(--accent-soft); outline: 2px solid var(--accent); }
 
 /* ---------------- ESCALA DE DOR ---------------- */
-.pain-scale { display: flex; gap: 5px; }
-.pain-dot {
-  flex: 1; aspect-ratio: 1/1; border-radius: 8px;
-  background: var(--bg-elev-2);
-  font-size: var(--fs-footnote); font-weight: 700; color: var(--label-3);
-  display: grid; place-items: center;
-  transition: transform var(--dur-fast) var(--ease-spring);
+/* BUG CORRIGIDO (v1.6.2): 11 botões numa única linha flexível ficavam com ~22px
+   em iPhones estreitos — abaixo do mínimo de toque do iOS (44px) e fáceis de
+   confundir com rolagem. Agora é uma grade de 6 colunas (duas linhas: 0–5 e
+   6–10), com todos os números visíveis, alvos grandes e touch-action para o
+   toque nunca disputar com o scroll. */
+.pain-scale {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
 }
-.pain-dot:active { transform: scale(.88); }
+.pain-dot {
+  min-height: 48px; border-radius: var(--r-sm);
+  background: var(--bg-elev-2);
+  font-size: var(--fs-callout); font-weight: 700; color: var(--label-2);
+  display: grid; place-items: center;
+  touch-action: manipulation;               /* toque não vira scroll/zoom */
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease-spring), background var(--dur-fast);
+}
+.pain-dot:active { transform: scale(.9); }
 .pain-dot.active { color: #fff; }
 
 /* ---------------- GRÁFICOS ---------------- */

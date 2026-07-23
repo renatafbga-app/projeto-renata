@@ -389,6 +389,32 @@ export async function listPhotoSessions() {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/**
+ * Última avaliação corporal: a data mais recente entre peso, medidas e fotos.
+ * Alimenta o lembrete de 15 dias na Home. Não limita registros — apenas informa
+ * há quanto tempo foi a última avaliação.
+ */
+export async function ultimaAvaliacao() {
+  const datas = [];
+  const pesos = await listDaily('weight');
+  if (pesos.length) datas.push(pesos.at(-1).date);
+  const medidas = await listDaily('measures');
+  if (medidas.length) datas.push(medidas.at(-1).date);
+  const fotos = await listPhotoSessions();
+  const comFoto = fotos.filter(f => f.total > 0);
+  if (comFoto.length) datas.push(comFoto.at(-1).date);
+  if (!datas.length) return null;
+  datas.sort();
+  const ultima = datas.at(-1);
+  const hoje = hojeISO();
+  const dias = Math.round((new Date(hoje + 'T12:00:00') - new Date(ultima + 'T12:00:00')) / 86400000);
+  return { date: ultima, dias, pendencias: {
+    peso: !pesos.some(p => p.date === ultima),
+    medidas: !medidas.some(m => m.date === ultima),
+    fotos: !comFoto.some(f => f.date === ultima)
+  } };
+}
+
 /** Último peso conhecido no aplicativo inteiro, com a data em que foi medido. */
 export async function ultimoPeso() {
   const linhas = (await listDaily('weight'))

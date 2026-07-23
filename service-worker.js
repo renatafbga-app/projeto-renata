@@ -11,7 +11,7 @@
  *   Para subir uma versão nova, basta alterar CACHE_VERSION abaixo.
  * ========================================================================== */
 
-const CACHE_VERSION = 'v1.6.1';
+const CACHE_VERSION = 'v1.6.2';
 const CACHE = `projeto-renata-${CACHE_VERSION}`;
 
 /** Tudo que o app precisa para abrir offline. */

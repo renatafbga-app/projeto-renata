@@ -416,7 +416,7 @@ multi-perfil: todo registro carrega o campo `profile`.
 node tools/test.mjs
 ```
 
-169 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
+179 testes cobrindo: integridade dos dados estáticos (90 dias, 30 exercícios,
 figuras), configurações, desbloqueio de dias, autosave e retomada de treino,
 histórico de carga, **a regra de segurança do joelho**, registros diários,
 diário, estatísticas, backup ida-e-volta, integridade do conteúdo do livro, navegação, offline,

@@ -1,6 +1,6 @@
 import { icon } from '../icons.js';
 import { refresh } from '../router.js';
-import { qs, qsa, lineChart, fmtDate, toast, haptic, esc } from '../ui.js';
+import { qsa, lineChart, fmtDate, toast, haptic, esc } from '../ui.js';
 import * as store from '../core/store.js';
 import { bindAutosave } from '../core/autosave.js';
 
@@ -47,9 +47,13 @@ export default {
       : `<div class="empty"><div class="empty-text">Nenhum registro ainda. Anote seu peso acima.</div></div>`}`;
   },
   mount(root, params, ctx = {}) {
-    const dateEl = qs('#wDate', root);
+    /* BUG CORRIGIDO (v1.6.2): este mount referenciava #wDate, um campo de data
+       removido na v1.6.1 quando a tela passou a usar o seletor global. Com o
+       elemento inexistente, dateEl era null e a linha dateEl.addEventListener
+       lançava TypeError — o mount quebrava e o autosave nunca era ligado.
+       Resultado: o peso não salvava. Agora a data vem sempre do seletor global. */
     bindAutosave(root, async (field, value) => {
-      const date = dateEl.value || store.dataDeTrabalho();
+      const date = store.dataDeTrabalho();
       const prev = await store.getDaily('weight', date);
       if (field === 'kg') {
         const kg = parseFloat(String(value).replace(',', '.'));
@@ -59,14 +63,9 @@ export default {
         await store.setDaily('weight', date, prev?.value || {}, value);
       }
     }, ctx);
-    dateEl.addEventListener('change', async () => {
-      const rec = await store.getDaily('weight', dateEl.value);
-      qs('#wVal', root).value = rec?.value?.kg ?? '';
-      qs('#wNote', root).value = rec?.note ?? '';
-    }, { signal: ctx.signal });
     qsa('[data-del]', root).forEach(b => b.addEventListener('click', async () => {
       await store.removeDaily('weight', b.dataset.del);
       haptic(); toast('Registro apagado'); refresh();
-    }));
+    }, { signal: ctx.signal }));
   }
 };

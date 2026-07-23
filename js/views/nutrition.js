@@ -150,10 +150,8 @@ export default {
 
   mount(root, params, ctx = {}) {
     const sig = { signal: ctx.signal };
-    const dataEl = qs('#nData', root);
-    const dataAtual = () => dataEl.value || store.dataDeTrabalho();
+    const dataAtual = () => store.dataDeTrabalho();
 
-    dataEl.addEventListener('change', refresh, sig);
 
     bindAutosave(root, async (campo, valor) => {
       const rec = await store.getDaily('meals', dataAtual());

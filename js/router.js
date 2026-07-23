@@ -105,6 +105,7 @@ function setNavbar(view, params) {
   const mostraData = TELAS_COM_DATA.has(raizPath) && !view.compact;
   const bar = qs('#dateBar');
   if (bar) { bar.hidden = !mostraData; if (mostraData) atualizarBarraData(); }
+  medirNavbar();
 
   const compact = !!view.compact;
   qs('#app').classList.toggle('compact', compact);
@@ -128,6 +129,17 @@ function setNavbar(view, params) {
 /* Render */
 let _rotaAtual = '/';
 function current2Path() { return _rotaAtual; }
+
+/* Mede a altura real da navbar (safe-area + barra + barra de data + título) e
+   publica em --nav-h, para o conteúdo começar exatamente abaixo dela. */
+function medirNavbar() {
+  requestAnimationFrame(() => {
+    const nav = qs('#navbar');
+    if (!nav) return;
+    const h = nav.offsetHeight;
+    if (h > 0) document.documentElement.style.setProperty('--nav-h', (h + 8) + 'px');
+  });
+}
 
 async function render() {
   const match = parse();
@@ -199,6 +211,7 @@ async function render() {
 
   app.innerHTML = `<div class="view${goingBack ? ' back' : ''}">${html}</div>`;
   window.scrollTo(0, 0);
+  medirNavbar();
   syncTabs(match.path);
 
   try {
@@ -232,6 +245,9 @@ export function startRouter() {
 
   // ao mudar a data, atualiza a barra e redesenha a tela para refletir o novo dia
   datas.aoMudarData(() => { atualizarBarraData(); render(); });
+
+  // o título grande colapsa no scroll, mudando a altura da navbar
+  window.addEventListener('scroll', () => medirNavbar(), { passive: true });
 
   render();
 }
